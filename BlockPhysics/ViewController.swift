@@ -13,11 +13,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 	var panGesture: UIPanGestureRecognizer! = nil
 	var liftGesture: UILongPressGestureRecognizer! = nil
-	var dynamicAnimator: UIDynamicAnimator! = nil
 
-	var dragBehavior: UIAttachmentBehavior! = nil
-
-	var anchors: [UIAttachmentBehavior] = []
+	var animations: [POPSpringAnimation] = []
 
 	override func loadView() {
 		super.loadView()
@@ -45,32 +42,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			blockView.addGestureRecognizer(liftGesture)
 		}
 
-		dynamicAnimator = UIDynamicAnimator(referenceView: view)
-
-		let dynamicItemBehavior = UIDynamicItemBehavior(items: blocks)
-		dynamicItemBehavior.allowsRotation = true
-		dynamicItemBehavior.density = 1000
-		dynamicItemBehavior.resistance = 1
-//		dynamicItemBehavior.elasticity = 0.3
-		dynamicAnimator.addBehavior(dynamicItemBehavior)
-
-		let collisionBehavior = UICollisionBehavior(items: blocks)
-//		dynamicAnimator.addBehavior(collisionBehavior)
-
 		for i in 0..<(numberOfBlocks-1) {
-			let addSpring: (UIOffset) -> Void = { offset in
-//				var attachment = UIAttachmentBehavior(item: self.blocks[i], offsetFromCenter: offset, attachedToAnchor: self.blocks[i].center)
-				var attachment = UIAttachmentBehavior(item: self.blocks[i], offsetFromCenter: offset, attachedToItem: self.blocks[i+1], offsetFromCenter: UIOffset(horizontal: -50, vertical: 0))
-				attachment.damping = 0.5
-				attachment.frequency = 2 + 0.2 * CGFloat(i)
-				self.dynamicAnimator.addBehavior(attachment)
-//				self.anchors.append(attachment)
-			}
-
-			addSpring(UIOffset(horizontal: -25, vertical: 25))
-			addSpring(UIOffset(horizontal: 25, vertical: 25))
-			addSpring(UIOffset(horizontal: 25, vertical: -25))
-			addSpring(UIOffset(horizontal: -25, vertical: -25))
+			let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPosition)
+			var toPoint: CGPoint = blocks[i].center
+			springAnimation.springSpeed = 20 + 4.0 * CGFloat(i)
+			springAnimation.springBounciness = 15.0 - 1.0 * CGFloat(i)
+			springAnimation.toValue = NSValue(CGPoint: toPoint)
+			springAnimation.removedOnCompletion = false;
+			animations.append(springAnimation)
+			blocks[i].pop_addAnimation(springAnimation, forKey: "position")
 		}
 
 	}
@@ -87,44 +67,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	func handlePan(gesture: UIPanGestureRecognizer) {
 		let gestureLocation = gesture.locationInView(view)
 		switch gesture.state {
-		case .Began:
-			if dragBehavior {
-				dynamicAnimator.removeBehavior(dragBehavior)
-				dragBehavior = nil
-			}
-			dragBehavior = UIAttachmentBehavior(item: gesture.view, attachedToAnchor: gestureLocation)
-			dragBehavior.length = 0
-//			dragBehavior.damping = 1
-//			dragBehavior.frequency = 1
-			dynamicAnimator.addBehavior(dragBehavior)
-			gesture.setTranslation(CGPointZero, inView: view)
 		case .Changed:
-			dragBehavior.anchorPoint = gestureLocation
 			let translation = gesture.translationInView(view)
-			for anchor in anchors {
-				if (anchor.items[0] as UIView != gesture.view) {
-				anchor.anchorPoint.x += translation.x
-				anchor.anchorPoint.y += translation.y
-				}
+			gesture.setTranslation(CGPoint(), inView: view)
+			gesture.view.center.x += translation.x
+			gesture.view.center.y += translation.y
+			for springAnimation in animations {
+				var newToValue = springAnimation.toValue.CGPointValue()
+				newToValue.x += translation.x
+				newToValue.y += translation.y
+				springAnimation.toValue = NSValue(CGPoint: newToValue)
 			}
-			gesture.setTranslation(CGPointZero, inView: view)
-
-/*			for block in blocks {
-				if CGRectIntersectsRect(block.frame, gesture.view.frame) && block != gesture.view && anchors.count == 0{
-					let attachment = UIAttachmentBehavior(item: block, offsetFromCenter: UIOffset(horizontal: 25, vertical: 0), attachedToItem: gesture.view, offsetFromCenter: UIOffset(horizontal: -50, vertical: 0))
-					attachment.damping = 10
-					attachment.frequency = 25
-					dynamicAnimator.addBehavior(attachment)
-//					anchors.append(attachment)
-
-					let attachment2 = UIAttachmentBehavior(item: block, offsetFromCenter: UIOffset(horizontal: -25, vertical: 0), attachedToAnchor: CGPoint(x: CGRectGetMidX(gesture.view.frame) - 75, y: CGRectGetMidY(gesture.view.frame)))
-					attachment2.damping = 10
-					attachment2.frequency = 25
-					attachment2.length = 0
-//					dynamicAnimator.addBehavior(attachment2)
-//					anchors.append(attachment2)
-				}
-			}*/
 		default:
 			break
 		}
@@ -134,7 +87,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		switch gesture.state {
 		case .Began:
 			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-//				gesture.view.transform = CGAffineTransformMakeScale(1.25, 1.25)
+				gesture.view.transform = CGAffineTransformMakeScale(1.25, 1.25)
 			}, completion: nil)
 			gesture.view.layer.zPosition = 1
 		case .Ended:
