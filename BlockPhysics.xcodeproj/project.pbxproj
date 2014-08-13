@@ -13,7 +13,6 @@
 		EBDA77B5199AEDBF00860635 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EBDA77B3199AEDBF00860635 /* Main.storyboard */; };
 		EBDA77B7199AEDBF00860635 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EBDA77B6199AEDBF00860635 /* Images.xcassets */; };
 		EBDA77C3199AEDBF00860635 /* BlockPhysicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDA77C2199AEDBF00860635 /* BlockPhysicsTests.swift */; };
-		EBDA77CE199C202400860635 /* Dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = EBDA77CD199C202400860635 /* Dummy.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,7 +38,6 @@
 		EBDA77C1199AEDBF00860635 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EBDA77C2199AEDBF00860635 /* BlockPhysicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlockPhysicsTests.swift; sourceTree = "<group>"; };
 		EBDA77CC199C202400860635 /* BlockPhysics-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BlockPhysics-Bridging-Header.h"; sourceTree = "<group>"; };
-		EBDA77CD199C202400860635 /* Dummy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Dummy.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -97,7 +95,6 @@
 				EBDA77B3199AEDBF00860635 /* Main.storyboard */,
 				EBDA77B6199AEDBF00860635 /* Images.xcassets */,
 				EBDA77AD199AEDBF00860635 /* Supporting Files */,
-				EBDA77CD199C202400860635 /* Dummy.m */,
 				EBDA77CC199C202400860635 /* BlockPhysics-Bridging-Header.h */,
 			);
 			path = BlockPhysics;
@@ -262,7 +259,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EBDA77CE199C202400860635 /* Dummy.m in Sources */,
 				EBDA77B2199AEDBF00860635 /* ViewController.swift in Sources */,
 				EBDA77B0199AEDBF00860635 /* AppDelegate.swift in Sources */,
 			);
