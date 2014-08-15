@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		20E0C6FDB5C640E0933E0542 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A87DD38CD9494B2F9178F548 /* libPods.a */; };
+		EBC1D8C3199EB96F00244A6C /* KFTunableSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */; };
+		EBC1D8C5199EB99000244A6C /* Blocks.json in Resources */ = {isa = PBXBuildFile; fileRef = EBC1D8C4199EB99000244A6C /* Blocks.json */; };
 		EBDA77B0199AEDBF00860635 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDA77AF199AEDBF00860635 /* AppDelegate.swift */; };
 		EBDA77B2199AEDBF00860635 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDA77B1199AEDBF00860635 /* ViewController.swift */; };
 		EBDA77B5199AEDBF00860635 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EBDA77B3199AEDBF00860635 /* Main.storyboard */; };
@@ -28,6 +30,9 @@
 /* Begin PBXFileReference section */
 		944340DCD5204E17BFAF0FC5 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		A87DD38CD9494B2F9178F548 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		EBC1D8C1199EB96F00244A6C /* KFTunableSpec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KFTunableSpec.h; sourceTree = "<group>"; };
+		EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KFTunableSpec.m; sourceTree = "<group>"; };
+		EBC1D8C4199EB99000244A6C /* Blocks.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Blocks.json; sourceTree = "<group>"; };
 		EBDA77AA199AEDBF00860635 /* BlockPhysics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlockPhysics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBDA77AE199AEDBF00860635 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EBDA77AF199AEDBF00860635 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -96,6 +101,8 @@
 				EBDA77B6199AEDBF00860635 /* Images.xcassets */,
 				EBDA77AD199AEDBF00860635 /* Supporting Files */,
 				EBDA77CC199C202400860635 /* BlockPhysics-Bridging-Header.h */,
+				EBC1D8C1199EB96F00244A6C /* KFTunableSpec.h */,
+				EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */,
 			);
 			path = BlockPhysics;
 			sourceTree = "<group>";
@@ -104,6 +111,7 @@
 			isa = PBXGroup;
 			children = (
 				EBDA77AE199AEDBF00860635 /* Info.plist */,
+				EBC1D8C4199EB99000244A6C /* Blocks.json */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -207,6 +215,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBC1D8C5199EB99000244A6C /* Blocks.json in Resources */,
 				EBDA77B5199AEDBF00860635 /* Main.storyboard in Resources */,
 				EBDA77B7199AEDBF00860635 /* Images.xcassets in Resources */,
 			);
@@ -260,6 +269,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EBDA77B2199AEDBF00860635 /* ViewController.swift in Sources */,
+				EBC1D8C3199EB96F00244A6C /* KFTunableSpec.m in Sources */,
 				EBDA77B0199AEDBF00860635 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

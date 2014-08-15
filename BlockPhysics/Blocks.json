@@ -1,0 +1,37 @@
+[
+ {
+ "sliderMaxValue": 1.0,
+ "key": "blockBackgroundWhite",
+ "label": "Block Background White %",
+ "sliderValue": 0.9,
+ "sliderMinValue": 0.0
+ },
+ {
+ "sliderMaxValue": 1.0,
+ "key": "blockBorderWhite",
+ "label": "Block Border White %",
+ "sliderValue": 0.7,
+ "sliderMinValue": 0.0
+ },
+ {
+ "sliderMaxValue": 4.0,
+ "key": "leadingMagnificationScale",
+ "label": "Scale factor for leading dragged block",
+ "sliderValue": 2.0,
+ "sliderMinValue": 1.0
+ },
+ {
+ "sliderMaxValue": 3.0,
+ "key": "trailingMagnificationScale",
+ "label": "Scale factor for trailing dragged blocks",
+ "sliderValue": 1.75,
+ "sliderMinValue": 1.0
+ },
+ {
+ "sliderMaxValue": 60,
+ "key": "blockSize",
+ "label": "Block size",
+ "sliderValue": 15,
+ "sliderMinValue": 8
+ }
+]

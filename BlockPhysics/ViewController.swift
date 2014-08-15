@@ -8,20 +8,24 @@
 
 import UIKit
 
-let blockSize: CGFloat = 15.0
+let spec = KFTunableSpec.specNamed("Blocks") as KFTunableSpec
 
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var blocks: [UIView] = []
+	var draggingChain: [UIView] = []
 
 	var panGesture: UIPanGestureRecognizer! = nil
 	var liftGesture: UILongPressGestureRecognizer! = nil
 
 	var animations: [UIView: POPSpringAnimation] = [:]
 
-	var draggingChain: [UIView] = []
+	var blockSize: CGFloat = 15.0
 
 	override func loadView() {
 		super.loadView()
+
+		self.view.addGestureRecognizer(spec.twoFingerTripleTapGestureRecognizer())
+
 		view.backgroundColor = UIColor.whiteColor()
 
 		let numberOfBlocks = 50
@@ -30,10 +34,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		blocks.reserveCapacity(numberOfBlocks)
 
 		for i in 0..<numberOfBlocks {
-			let row = CGFloat(i / blocksPerRow * 200 + 80)
-			let blockView = UIView(frame: CGRectMake(25 + 60 * CGFloat(i % blocksPerRow), row, blockSize, blockSize))
-			blockView.backgroundColor = UIColor(white: 0.9, alpha: 1)
-			blockView.layer.borderColor = UIColor(white: 0.7, alpha: 1).CGColor
+			let y = CGFloat(i / blocksPerRow * 200 + 80)
+			let blockView = UIView()
+			blockView.center.x = 25 + 60 * CGFloat(i % blocksPerRow)
+			blockView.center.y = CGFloat(i / blocksPerRow * 200 + 80)
+			spec.withDoubleForKey("blockSize", owner: blockView) {
+				let view = $0 as UIView!
+				let size = CGFloat($1)
+				view.bounds.size.width = size
+				view.bounds.size.height = size
+			}
+			spec.withDoubleForKey("blockBackgroundWhite", owner: blockView) { ($0 as UIView!).backgroundColor = UIColor(white: CGFloat($1), alpha: 1) }
+			spec.withDoubleForKey("blockBorderWhite", owner: blockView) { ($0 as UIView!).layer.borderColor = UIColor(white: CGFloat($1), alpha: 1).CGColor }
 			blockView.layer.borderWidth = 1
 			blocks.append(blockView)
 			view.addSubview(blockView)
@@ -47,6 +59,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			liftGesture.delegate = self
 			blockView.addGestureRecognizer(liftGesture)
 		}
+
+		spec.withDoubleForKey("blockSize", owner: self) { ($0 as ViewController!).blockSize = CGFloat($1) }
 
 		for i in 0..<(numberOfBlocks) {
 			let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPosition)
@@ -85,7 +99,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				if !contains(draggingChain, block) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
 					draggingChain.insert(block, atIndex:1)
 					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-						block.bounds = CGRectMake(0, 0, blockSize * 1.75, blockSize * 1.75)
+						let trailingMagnificationScale = CGFloat(spec.doubleForKey("trailingMagnificationScale"))
+						block.bounds = CGRectMake(0, 0, self.blockSize * trailingMagnificationScale, self.blockSize * trailingMagnificationScale)
 					}, completion: nil)
 				}
 			}
@@ -112,7 +127,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
 				animation.toValue = NSValue(CGPoint: newToValue)
 				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-					self.draggingChain[i].bounds = CGRectMake(0, 0, blockSize, blockSize)
+					self.draggingChain[i].bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
 				}, completion: nil)
 			}
 		default:
@@ -124,12 +139,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		switch gesture.state {
 		case .Began:
 			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-				gesture.view.bounds = CGRectMake(0, 0, blockSize * 2.0, blockSize * 2.0)
+				let leadingMagnificationScale = CGFloat(spec.doubleForKey("leadingMagnificationScale"))
+				gesture.view.bounds = CGRectMake(0, 0, self.blockSize * leadingMagnificationScale, self.blockSize * leadingMagnificationScale)
 			}, completion: nil)
 			gesture.view.layer.zPosition = 100
 		case .Ended:
 			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-				gesture.view.bounds = CGRectMake(0, 0, blockSize, blockSize)
+				gesture.view.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
 				}, completion: nil)
 			gesture.view.layer.zPosition = 0
 		default:
