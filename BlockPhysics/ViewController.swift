@@ -11,7 +11,7 @@ import UIKit
 let spec = KFTunableSpec.specNamed("Blocks") as KFTunableSpec
 
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
-	var blocks: [UIView] = []
+	var blockViews: [UIView] = []
 	var draggingChain: [UIView] = []
 
 	var panGesture: UIPanGestureRecognizer! = nil
@@ -30,8 +30,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 		let numberOfBlocks = 50
 		let blocksPerRow = 12
-		blocks = []
-		blocks.reserveCapacity(numberOfBlocks)
+		blockViews = []
+		blockViews.reserveCapacity(numberOfBlocks)
 
 		for i in 0..<numberOfBlocks {
 			let y = CGFloat(i / blocksPerRow * 200 + 80)
@@ -47,7 +47,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			spec.withDoubleForKey("blockBackgroundWhite", owner: blockView) { ($0 as UIView!).backgroundColor = UIColor(white: CGFloat($1), alpha: 1) }
 			spec.withDoubleForKey("blockBorderWhite", owner: blockView) { ($0 as UIView!).layer.borderColor = UIColor(white: CGFloat($1), alpha: 1).CGColor }
 			blockView.layer.borderWidth = 1
-			blocks.append(blockView)
+			blockViews.append(blockView)
 			view.addSubview(blockView)
 
 			let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
@@ -64,16 +64,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 		for i in 0..<(numberOfBlocks) {
 			let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPosition)
-			var toPoint: CGPoint = blocks[i].center
+			var toPoint: CGPoint = blockViews[i].center
 			springAnimation.toValue = NSValue(CGPoint: toPoint)
 			springAnimation.removedOnCompletion = false;
-			animations[blocks[i]] = springAnimation
-			blocks[i].pop_addAnimation(springAnimation, forKey: "position")
+			animations[blockViews[i]] = springAnimation
+			blockViews[i].pop_addAnimation(springAnimation, forKey: "position")
 		}
 	}
 
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldReceiveTouch touch: UITouch!) -> Bool {
-		return contains(blocks, touch.view)
+		return contains(blockViews, touch.view)
 	}
 
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer!) -> Bool {
@@ -83,7 +83,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 	func handlePan(gesture: UIPanGestureRecognizer) {
 		let gestureLocation = gesture.locationInView(view)
-		let blockIndex = find(blocks, gesture.view)!
+		let blockIndex = find(blockViews, gesture.view)!
 		switch gesture.state {
 		case .Began:
 			draggingChain = [gesture.view]
@@ -95,7 +95,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			gesture.view.center.y += translation.y
 
 			let draggingBlockIndexInChain = find(draggingChain, gesture.view)!
-			for block in blocks {
+			for block in blockViews {
 				if !contains(draggingChain, block) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
 					draggingChain.insert(block, atIndex:1)
 					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
@@ -115,8 +115,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				animation.springBounciness = 0 + 2 * CGFloat(abs(indexDelta))
 			}
 		case .Ended:
-			let animation = animations[blocks[blockIndex]]!
-			animation.toValue = NSValue(CGPoint: blocks[blockIndex].center)
+			let animation = animations[blockViews[blockIndex]]!
+			animation.toValue = NSValue(CGPoint: blockViews[blockIndex].center)
 			animation.fromValue = animation.toValue
 			gesture.view.pop_addAnimation(animation, forKey: "position")
 
