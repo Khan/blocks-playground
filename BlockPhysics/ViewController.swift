@@ -14,7 +14,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var panGesture: UIPanGestureRecognizer! = nil
 	var liftGesture: UILongPressGestureRecognizer! = nil
 
-	var animations: [POPSpringAnimation] = []
+	var animations: [UIView: POPSpringAnimation] = [:]
+
+	var draggingChain: [UIView] = []
 
 	override func loadView() {
 		super.loadView()
@@ -42,17 +44,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			blockView.addGestureRecognizer(liftGesture)
 		}
 
-		for i in 0..<(numberOfBlocks-1) {
+		for i in 0..<(numberOfBlocks) {
 			let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPosition)
 			var toPoint: CGPoint = blocks[i].center
-			springAnimation.springSpeed = 20 + 4.0 * CGFloat(i)
-			springAnimation.springBounciness = 15.0 - 1.0 * CGFloat(i)
 			springAnimation.toValue = NSValue(CGPoint: toPoint)
 			springAnimation.removedOnCompletion = false;
-			animations.append(springAnimation)
+			animations[blocks[i]] = springAnimation
 			blocks[i].pop_addAnimation(springAnimation, forKey: "position")
 		}
-
 	}
 
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldReceiveTouch touch: UITouch!) -> Bool {
@@ -66,17 +65,51 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 	func handlePan(gesture: UIPanGestureRecognizer) {
 		let gestureLocation = gesture.locationInView(view)
+		let blockIndex = find(blocks, gesture.view)!
 		switch gesture.state {
+		case .Began:
+			draggingChain = [gesture.view]
+			gesture.view.pop_removeAnimationForKey("position")
 		case .Changed:
 			let translation = gesture.translationInView(view)
 			gesture.setTranslation(CGPoint(), inView: view)
 			gesture.view.center.x += translation.x
 			gesture.view.center.y += translation.y
-			for springAnimation in animations {
-				var newToValue = springAnimation.toValue.CGPointValue()
-				newToValue.x += translation.x
-				newToValue.y += translation.y
-				springAnimation.toValue = NSValue(CGPoint: newToValue)
+
+			let draggingBlockIndexInChain = find(draggingChain, gesture.view)!
+			for block in blocks {
+				if !contains(draggingChain, block) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
+					if (gesture.view.center.x < block.center.x) {
+						draggingChain.insert(block, atIndex:draggingBlockIndexInChain)
+					} else {
+						draggingChain.insert(block, atIndex:draggingBlockIndexInChain + 1)
+					}
+				}
+			}
+
+			for i in 0..<draggingChain.count {
+				let animation = animations[draggingChain[i]]!
+				let indexDelta = i - find(draggingChain, gesture.view)!
+				let separation = CGFloat(2.0)
+				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
+				animation.toValue = NSValue(CGPoint: newToValue)
+				animation.springSpeed = 80 - 8.0 * CGFloat(abs(indexDelta))
+				animation.springBounciness = 0 + 2 * CGFloat(abs(indexDelta))
+			}
+		case .Ended:
+			let animation = animations[blocks[blockIndex]]!
+			animation.toValue = NSValue(CGPoint: blocks[blockIndex].center)
+			animation.fromValue = animation.toValue
+			gesture.view.pop_addAnimation(animation, forKey: "position")
+
+			if draggingChain.count < 10 {
+				for i in 0..<draggingChain.count {
+					let animation = animations[draggingChain[i]]!
+					let indexDelta = i - find(draggingChain, gesture.view)!
+					let separation = CGFloat(25.0)
+					let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
+					animation.toValue = NSValue(CGPoint: newToValue)
+				}
 			}
 		default:
 			break
