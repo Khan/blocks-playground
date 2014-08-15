@@ -8,6 +8,8 @@
 
 import UIKit
 
+let blockSize: CGFloat = 15.0
+
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var blocks: [UIView] = []
 
@@ -29,7 +31,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 		for i in 0..<numberOfBlocks {
 			let row = CGFloat(i / blocksPerRow * 200 + 80)
-			let blockView = UIView(frame: CGRectMake(25 + 60 * CGFloat(i % blocksPerRow), row, 20, 20))
+			let blockView = UIView(frame: CGRectMake(25 + 60 * CGFloat(i % blocksPerRow), row, blockSize, blockSize))
 			blockView.backgroundColor = UIColor(white: 0.9, alpha: 1)
 			blockView.layer.borderColor = UIColor(white: 0.7, alpha: 1).CGColor
 			blockView.layer.borderWidth = 1
@@ -83,7 +85,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				if !contains(draggingChain, block) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
 					draggingChain.insert(block, atIndex:1)
 					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-						block.bounds = CGRectMake(0, 0, 35, 35)
+						block.bounds = CGRectMake(0, 0, blockSize * 1.75, blockSize * 1.75)
 					}, completion: nil)
 				}
 			}
@@ -104,15 +106,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			gesture.view.pop_addAnimation(animation, forKey: "position")
 
 			for i in 0..<draggingChain.count {
-				if draggingChain.count < 10 {
-					let animation = animations[draggingChain[i]]!
-					let indexDelta = i - find(draggingChain, gesture.view)!
-					let separation = CGFloat(20)
-					let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
-					animation.toValue = NSValue(CGPoint: newToValue)
-				}
+				let animation = animations[draggingChain[i]]!
+				let indexDelta = i - find(draggingChain, gesture.view)!
+				let separation: CGFloat = draggingChain.count < 10 ? blockSize * 1.25 : -1.0
+				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
+				animation.toValue = NSValue(CGPoint: newToValue)
 				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-					self.draggingChain[i].bounds = CGRectMake(0, 0, 20, 20)
+					self.draggingChain[i].bounds = CGRectMake(0, 0, blockSize, blockSize)
 				}, completion: nil)
 			}
 		default:
@@ -124,12 +124,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		switch gesture.state {
 		case .Began:
 			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-				gesture.view.bounds = CGRectMake(0, 0, 40, 40)
+				gesture.view.bounds = CGRectMake(0, 0, blockSize * 2.0, blockSize * 2.0)
 			}, completion: nil)
 			gesture.view.layer.zPosition = 100
 		case .Ended:
 			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-				gesture.view.transform = CGAffineTransformIdentity
+				gesture.view.bounds = CGRectMake(0, 0, blockSize, blockSize)
 				}, completion: nil)
 			gesture.view.layer.zPosition = 0
 		default:
