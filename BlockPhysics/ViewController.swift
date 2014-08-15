@@ -79,17 +79,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			let draggingBlockIndexInChain = find(draggingChain, gesture.view)!
 			for block in blocks {
 				if !contains(draggingChain, block) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
-					if (gesture.view.center.x < block.center.x) {
-						draggingChain.insert(block, atIndex:draggingBlockIndexInChain)
-					} else {
-						draggingChain.insert(block, atIndex:draggingBlockIndexInChain + 1)
-					}
+					draggingChain.insert(block, atIndex:1)
 				}
 			}
 
 			for i in 0..<draggingChain.count {
 				let animation = animations[draggingChain[i]]!
-				let indexDelta = i - find(draggingChain, gesture.view)!
+				let indexDelta = i * (gesture.velocityInView(view).x > 0 ? -1 : 1)
 				let separation = CGFloat(2.0)
 				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
 				animation.toValue = NSValue(CGPoint: newToValue)
