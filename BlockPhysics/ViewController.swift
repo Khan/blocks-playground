@@ -17,9 +17,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var panGesture: UIPanGestureRecognizer! = nil
 	var liftGesture: UILongPressGestureRecognizer! = nil
 
-	var animations: [UIView: POPSpringAnimation] = [:]
-
 	var blockSize: CGFloat = 15.0
+
+	let positionAnimationKey = "position"
+	var animations: [UIView: POPSpringAnimation] = [:]
 
 	override func loadView() {
 		super.loadView()
@@ -68,8 +69,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			springAnimation.toValue = NSValue(CGPoint: toPoint)
 			springAnimation.removedOnCompletion = false;
 			animations[blockViews[i]] = springAnimation
-			blockViews[i].pop_addAnimation(springAnimation, forKey: "position")
+			blockViews[i].pop_addAnimation(springAnimation, forKey: positionAnimationKey)
 		}
+	}
+
+	func positionAnimationForBlockView(blockView: UIView) -> POPSpringAnimation {
+		return animations[blockView]!
 	}
 
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldReceiveTouch touch: UITouch!) -> Bool {
@@ -106,7 +111,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			}
 
 			for i in 0..<draggingChain.count {
-				let animation = animations[draggingChain[i]]!
+				let animation = positionAnimationForBlockView(draggingChain[i])
 				let indexDelta = i * (gesture.velocityInView(view).x > 0 ? -1 : 1)
 				let separation = CGFloat(0.0)
 				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
@@ -115,13 +120,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				animation.springBounciness = 0 + 2 * CGFloat(abs(indexDelta))
 			}
 		case .Ended:
-			let animation = animations[blockViews[blockIndex]]!
-			animation.toValue = NSValue(CGPoint: blockViews[blockIndex].center)
-			animation.fromValue = animation.toValue
-			gesture.view.pop_addAnimation(animation, forKey: "position")
+			let draggingBlockAnimation = positionAnimationForBlockView(gesture.view)
+			draggingBlockAnimation.toValue = NSValue(CGPoint: blockViews[blockIndex].center)
+			draggingBlockAnimation.fromValue = draggingBlockAnimation.toValue
+			gesture.view.pop_addAnimation(draggingBlockAnimation, forKey: "position")
 
 			for i in 0..<draggingChain.count {
-				let animation = animations[draggingChain[i]]!
+				let animation = positionAnimationForBlockView(draggingChain[i])
 				let indexDelta = i - find(draggingChain, gesture.view)!
 				let separation: CGFloat = draggingChain.count < 10 ? blockSize * 1.25 : -1.0
 				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
