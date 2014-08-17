@@ -10,9 +10,36 @@ import UIKit
 
 let spec = KFTunableSpec.specNamed("Blocks") as KFTunableSpec
 
+typealias BlockView = UIView
+
+enum BlockGrouping {
+	case Block(BlockView)
+	case Rod([BlockView])
+	case Square([BlockView])
+
+	func containsBlockView(blockView: BlockView) -> Bool {
+		switch self {
+		case .Block(let view):
+			return view === blockView
+		case .Rod(let views):
+			return contains(views, blockView)
+		case .Square(let views):
+			return contains(views, blockView)
+		}
+	}
+}
+
+enum HorizontalDirection {
+	case Left, Right
+}
+
+enum VerticalDirection {
+	case Up, Down
+}
+
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
-	var blockViews: [UIView] = []
-	var draggingChain: [UIView] = []
+	var blockViews: [BlockView] = []
+	var draggingChain: [BlockGrouping] = []
 
 	var panGesture: UIPanGestureRecognizer! = nil
 	var liftGesture: UILongPressGestureRecognizer! = nil
@@ -20,7 +47,11 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var blockSize: CGFloat = 15.0
 
 	let positionAnimationKey = "position"
-	var animations: [UIView: POPSpringAnimation] = [:]
+	var blockViewsToAnimations: [BlockView: POPSpringAnimation] = [:]
+	var blockViewsToBlockGroupings: [BlockView: BlockGrouping] = [:]
+
+	var horizontalDirection: HorizontalDirection = .Right
+	var verticalDirection: VerticalDirection = .Up
 
 	override func loadView() {
 		super.loadView()
@@ -68,13 +99,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			var toPoint: CGPoint = blockViews[i].center
 			springAnimation.toValue = NSValue(CGPoint: toPoint)
 			springAnimation.removedOnCompletion = false;
-			animations[blockViews[i]] = springAnimation
+			blockViewsToAnimations[blockViews[i]] = springAnimation
 			blockViews[i].pop_addAnimation(springAnimation, forKey: positionAnimationKey)
 		}
 	}
 
-	func positionAnimationForBlockView(blockView: UIView) -> POPSpringAnimation {
-		return animations[blockView]!
+	func positionAnimationForBlockView(blockView: BlockView) -> POPSpringAnimation {
+		return blockViewsToAnimations[blockView]!
 	}
 
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldReceiveTouch touch: UITouch!) -> Bool {
@@ -91,18 +122,54 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		let blockIndex = find(blockViews, gesture.view)!
 		switch gesture.state {
 		case .Began:
-			draggingChain = [gesture.view]
+			let grouping = blockViewsToBlockGroupings[gesture.view]
+			draggingChain = [grouping ?? .Block(gesture.view)]
+
+//			draggingChain = [.Rod(Array(blockViews[0...10]))]
+
 			gesture.view.pop_removeAnimationForKey("position")
+
+			horizontalDirection = gesture.velocityInView(view).x > 0 ? .Right : .Left
+			verticalDirection = gesture.velocityInView(view).y > 0 ? .Down : .Up
 		case .Changed:
 			let translation = gesture.translationInView(view)
 			gesture.setTranslation(CGPoint(), inView: view)
 			gesture.view.center.x += translation.x
 			gesture.view.center.y += translation.y
 
-			let draggingBlockIndexInChain = find(draggingChain, gesture.view)!
+			let gestureVelocity = gesture.velocityInView(view)
+			let velocityThreshold = CGFloat(100)
+			if horizontalDirection == .Left && (gestureVelocity.x > velocityThreshold) {
+				horizontalDirection = .Right
+			} else if horizontalDirection == .Right && gestureVelocity.x < -velocityThreshold {
+				horizontalDirection = .Left
+			}
+
+			if verticalDirection == .Up && (gestureVelocity.y > velocityThreshold) {
+				verticalDirection = .Down
+			} else if verticalDirection == .Down && gestureVelocity.y < -velocityThreshold {
+				verticalDirection = .Up
+			}
+
+//			let draggingBlockIndexInChain = find(draggingChain, gesture.view)!
 			for block in blockViews {
-				if !contains(draggingChain, block) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
-					draggingChain.insert(block, atIndex:1)
+				if !contains(draggingChain, {$0.containsBlockView(block)}) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
+					let firstGroup = draggingChain[0]
+					switch firstGroup {
+					case .Block(let view):
+						draggingChain[0] = .Rod([view, block])
+					case .Rod(var views):
+						if views.count < 10 {
+							views.insert(block, atIndex: 1)
+							draggingChain[0] = .Rod(views)
+						} else {
+							draggingChain[0] = .Block(gesture.view)
+							views[0] = block
+							draggingChain.insert(.Rod(views), atIndex: 1)
+						}
+					case .Square(var views):
+						abort()
+					}
 					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
 						let trailingMagnificationScale = CGFloat(spec.doubleForKey("trailingMagnificationScale"))
 						block.bounds = CGRectMake(0, 0, self.blockSize * trailingMagnificationScale, self.blockSize * trailingMagnificationScale)
@@ -110,21 +177,41 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				}
 			}
 
-			for i in 0..<draggingChain.count {
-				let animation = positionAnimationForBlockView(draggingChain[i])
-				let indexDelta = i * (gesture.velocityInView(view).x > 0 ? -1 : 1)
-				let separation = CGFloat(0.0)
-				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
-				animation.toValue = NSValue(CGPoint: newToValue)
-				animation.springSpeed = 80 - 8.0 * CGFloat(abs(indexDelta))
-				animation.springBounciness = 0 + 2 * CGFloat(abs(indexDelta))
+			var y = gesture.view.center.y
+			for grouping in draggingChain {
+				switch grouping {
+				case .Block(let blockView):
+					let animation = positionAnimationForBlockView(blockView)
+//					let indexDelta = i * (gesture.velocityInView(view).x > 0 ? -1 : 1)
+					let indexDelta = 0
+					let separation = CGFloat(0.0)
+					let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: y)
+					animation.toValue = NSValue(CGPoint: newToValue)
+				case .Rod(let blockViews):
+					var x = gesture.view.center.x
+					for blockView in blockViews {
+						let animation = positionAnimationForBlockView(blockView)
+						let xSeparation = CGFloat(18 - blockViews.count * 2.0)
+						let newToValue = CGPoint(x: x, y: y)
+						animation.toValue = NSValue(CGPoint: newToValue)
+						x += (xSeparation + blockView.bounds.size.width) * (horizontalDirection == .Right ? -1 : 1)
+					}
+				case .Square(let blockViews):
+					abort()
+				}
+
+				let ySeparation = CGFloat(20)
+				y += (ySeparation + blockSize) * (verticalDirection == .Down ? -1 : 1)
+
+//				animation.springSpeed = 80 - 8.0 * CGFloat(abs(indexDelta))
+//				animation.springBounciness = 0 + 2 * CGFloat(abs(indexDelta))
 			}
 		case .Ended:
 			let draggingBlockAnimation = positionAnimationForBlockView(gesture.view)
 			draggingBlockAnimation.toValue = NSValue(CGPoint: blockViews[blockIndex].center)
 			draggingBlockAnimation.fromValue = draggingBlockAnimation.toValue
 			gesture.view.pop_addAnimation(draggingBlockAnimation, forKey: "position")
-
+/*
 			for i in 0..<draggingChain.count {
 				let animation = positionAnimationForBlockView(draggingChain[i])
 				let indexDelta = i - find(draggingChain, gesture.view)!
@@ -134,7 +221,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
 					self.draggingChain[i].bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
 				}, completion: nil)
-			}
+			}*/
 		default:
 			break
 		}
