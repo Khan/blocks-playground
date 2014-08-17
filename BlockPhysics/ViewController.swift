@@ -111,8 +111,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			var toPoint: CGPoint = blockViews[i].center
 			springAnimation.toValue = NSValue(CGPoint: toPoint)
 			springAnimation.removedOnCompletion = false;
-			springAnimation.springSpeed = 10
-			springAnimation.springBounciness = 0
 			blockViewsToAnimations[blockViews[i]] = springAnimation
 			blockViews[i].pop_addAnimation(springAnimation, forKey: positionAnimationKey)
 		}
