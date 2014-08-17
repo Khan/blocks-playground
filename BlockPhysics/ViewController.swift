@@ -12,7 +12,7 @@ let spec = KFTunableSpec.specNamed("Blocks") as KFTunableSpec
 
 typealias BlockView = UIView
 
-enum BlockGrouping {
+enum BlockGrouping: SequenceType {
 	case Block(BlockView)
 	case Rod([BlockView])
 	case Square([BlockView])
@@ -25,6 +25,18 @@ enum BlockGrouping {
 			return contains(views, blockView)
 		case .Square(let views):
 			return contains(views, blockView)
+		}
+	}
+
+	typealias Generator = IndexingGenerator<Array<BlockView>>
+	func generate() -> Generator {
+		switch self {
+		case .Block(let view):
+			return [view].generate()
+		case .Rod(let views):
+			return views.generate()
+		case .Square(let views):
+			return views.generate()
 		}
 	}
 }
@@ -99,6 +111,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			var toPoint: CGPoint = blockViews[i].center
 			springAnimation.toValue = NSValue(CGPoint: toPoint)
 			springAnimation.removedOnCompletion = false;
+			springAnimation.springSpeed = 10
+			springAnimation.springBounciness = 0
 			blockViewsToAnimations[blockViews[i]] = springAnimation
 			blockViews[i].pop_addAnimation(springAnimation, forKey: positionAnimationKey)
 		}
@@ -115,6 +129,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer!) -> Bool {
 		return (gestureRecognizer.isKindOfClass(UIPanGestureRecognizer.self) && otherGestureRecognizer.isKindOfClass(UILongPressGestureRecognizer.self)) ||
 			(gestureRecognizer.isKindOfClass(UILongPressGestureRecognizer.self) && otherGestureRecognizer.isKindOfClass(UIPanGestureRecognizer.self))
+	}
+
+	func updateAnimationConstantsForBlockGrouping(blockGrouping: BlockGrouping, givenDraggingView draggingView: BlockView) {
+		for blockView in blockGrouping {
+			let blockDestination = blockViewsToAnimations[blockView]!.toValue.CGPointValue()
+			let deltaPoint = CGPoint(x: draggingView.center.x - blockDestination.x, y: draggingView.center.y - blockDestination.y)
+			let distance = sqrt(deltaPoint.x*deltaPoint.x + deltaPoint.y*deltaPoint.y)
+			let unitDistance = Double(distance / blockSize)
+			let animation = blockViewsToAnimations[blockView]!
+			animation.springSpeed = CGFloat(max(spec.doubleForKey("blockSpeedIntercept") - spec.doubleForKey("blockSpeedNegativeSlope") * unitDistance, 1))
+			animation.springBounciness = CGFloat(min(spec.doubleForKey("blockSpringinessIntercept") + spec.doubleForKey("blockSpringinessSlope") * unitDistance, 20))
+		}
 	}
 
 	func handlePan(gesture: UIPanGestureRecognizer) {
@@ -158,6 +184,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 					switch firstGroup {
 					case .Block(let view):
 						draggingChain[0] = .Rod([view, block])
+						updateAnimationConstantsForBlockGrouping(draggingChain[0], givenDraggingView: gesture.view)
 					case .Rod(var views):
 						if views.count < 10 {
 							views.insert(block, atIndex: 1)
@@ -166,6 +193,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 							draggingChain[0] = .Block(gesture.view)
 							views[0] = block
 							draggingChain.insert(.Rod(views), atIndex: 1)
+						}
+						for grouping in draggingChain {
+							updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: gesture.view)
 						}
 					case .Square(var views):
 						abort()
@@ -202,9 +232,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 				let ySeparation = CGFloat(20)
 				y += (ySeparation + blockSize) * (verticalDirection == .Down ? -1 : 1)
-
-//				animation.springSpeed = 80 - 8.0 * CGFloat(abs(indexDelta))
-//				animation.springBounciness = 0 + 2 * CGFloat(abs(indexDelta))
 			}
 		case .Ended:
 			let draggingBlockAnimation = positionAnimationForBlockView(gesture.view)
