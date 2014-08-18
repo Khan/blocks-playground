@@ -18,14 +18,7 @@ enum BlockGrouping: SequenceType {
 	case Square([BlockView])
 
 	func containsBlockView(blockView: BlockView) -> Bool {
-		switch self {
-		case .Block(let view):
-			return view === blockView
-		case .Rod(let views):
-			return contains(views, blockView)
-		case .Square(let views):
-			return contains(views, blockView)
-		}
+		return contains(self.generate(), blockView)
 	}
 
 	typealias Generator = IndexingGenerator<Array<BlockView>>
