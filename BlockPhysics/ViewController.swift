@@ -148,13 +148,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	}
 
 	func layoutBlockGrouping(blockGrouping: BlockGrouping, givenAnchorPoint anchorPoint: CGPoint, anchorBlockView: BlockView) {
-		var x = anchorPoint.x
-		for blockView in blockGrouping {
+		let xSeparation = CGFloat(18 - blockGrouping.count * 2.0)
+		let blocks = Array(blockGrouping)
+		let anchorBlockIndex = find(blocks, anchorBlockView)!
+		for blockIndex in 0..<blocks.count {
+			let blockView = blocks[blockIndex]
+			let indexDelta = blockIndex - anchorBlockIndex
 			let animation = positionAnimationForBlockView(blockView)
-			let xSeparation = CGFloat(18 - blockGrouping.count * 2.0)
+
+			let x = anchorPoint.x + (xSeparation + blockView.bounds.size.width) * CGFloat(indexDelta) * (horizontalDirection == .Right ? -1 : 1)
 			let newToValue = CGPoint(x: x, y: anchorPoint.y)
 			animation.toValue = NSValue(CGPoint: newToValue)
-			x += (xSeparation + blockView.bounds.size.width) * (horizontalDirection == .Right ? -1 : 1)
 		}
 	}
 
@@ -188,7 +192,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				verticalDirection = .Up
 			}
 
-//			let draggingBlockIndexInChain = find(draggingChain, gesture.view)!
 			for block in blockViews {
 				if !contains(draggingChain, {$0.containsBlockView(block)}) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
 					let firstGroup = draggingChain[0]
@@ -202,7 +205,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 							draggingChain[0] = .Rod(views)
 						} else {
 							draggingChain[0] = .Block(gesture.view)
-							views[0] = block
+							views.removeAtIndex(find(views, gesture.view)!)
+							views.insert(block, atIndex: 0)
 							draggingChain.insert(.Rod(views), atIndex: 1)
 						}
 						for grouping in draggingChain {
@@ -219,8 +223,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			}
 
 			var y = gesture.view.center.y
-			for grouping in draggingChain {
-				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: gesture.view.center.x, y: y), anchorBlockView: gesture.view)
+			for groupingIndex in 0..<draggingChain.count {
+				let grouping = draggingChain[groupingIndex]
+				let anchorBlockView = groupingIndex == 0 ? gesture.view : grouping.firstBlock()
+				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: gesture.view.center.x, y: y), anchorBlockView: anchorBlockView)
 				let ySeparation = CGFloat(20)
 				y += (ySeparation + blockSize) * (verticalDirection == .Down ? -1 : 1)
 			}
