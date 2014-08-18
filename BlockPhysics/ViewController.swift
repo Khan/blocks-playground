@@ -197,31 +197,43 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 			for block in blockViews {
 				if !contains(draggingChain, {$0.containsBlockView(block)}) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
-					let firstGroup = draggingChain[0]
-					switch firstGroup {
-					case .Block(let view):
-						draggingChain[0] = .Rod([view, block])
-						updateAnimationConstantsForBlockGrouping(draggingChain[0], givenDraggingView: gesture.view)
-					case .Rod(var views):
-						if views.count < 10 {
-							views.insert(block, atIndex: 1)
-							draggingChain[0] = .Rod(views)
-						} else {
-							draggingChain[0] = .Block(gesture.view)
-							views.removeAtIndex(find(views, gesture.view)!)
-							views.insert(block, atIndex: 0)
-							draggingChain.insert(.Rod(views), atIndex: 1)
+					let hitGroup = blockViewsToBlockGroupings[block]!
+					switch hitGroup {
+					case .Block:
+						let firstGroup = draggingChain[0]
+						switch firstGroup {
+						case .Block(let view):
+							draggingChain[0] = .Rod([view, block])
+							updateAnimationConstantsForBlockGrouping(draggingChain[0], givenDraggingView: gesture.view)
+						case .Rod(var views):
+							if views.count < 10 {
+								views.insert(block, atIndex: 1)
+								draggingChain[0] = .Rod(views)
+							} else {
+								draggingChain[0] = .Block(gesture.view)
+								views.removeAtIndex(find(views, gesture.view)!)
+								views.insert(block, atIndex: 0)
+								draggingChain.insert(.Rod(views), atIndex: 1)
+							}
+							for grouping in draggingChain {
+								updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: gesture.view)
+							}
+						case .Square(var views):
+							abort()
 						}
+					case .Rod:
+						draggingChain.insert(hitGroup, atIndex: 1)
 						for grouping in draggingChain {
 							updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: gesture.view)
 						}
-					case .Square(var views):
-						abort()
+					case .Square: abort()
 					}
+					for hitBlock in hitGroup {
 					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
 						let trailingMagnificationScale = CGFloat(spec.doubleForKey("trailingMagnificationScale"))
-						block.bounds = CGRectMake(0, 0, self.blockSize * trailingMagnificationScale, self.blockSize * trailingMagnificationScale)
+						hitBlock.bounds = CGRectMake(0, 0, self.blockSize * trailingMagnificationScale, self.blockSize * trailingMagnificationScale)
 					}, completion: nil)
+					}
 				}
 			}
 
