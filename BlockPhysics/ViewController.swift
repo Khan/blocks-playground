@@ -39,6 +39,14 @@ enum BlockGrouping: SequenceType {
 			return views.generate()
 		}
 	}
+
+	var count: Int {
+		switch self {
+		case .Block: return 1
+		case .Rod(let views): return views.count
+		case .Square(let views): return views.count
+		}
+	}
 }
 
 enum HorizontalDirection {
@@ -148,9 +156,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		case .Began:
 			let grouping = blockViewsToBlockGroupings[gesture.view]
 			draggingChain = [grouping ?? .Block(gesture.view)]
-
-//			draggingChain = [.Rod(Array(blockViews[0...10]))]
-
 			gesture.view.pop_removeAnimationForKey("position")
 
 			horizontalDirection = gesture.velocityInView(view).x > 0 ? .Right : .Left
@@ -207,25 +212,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 			var y = gesture.view.center.y
 			for grouping in draggingChain {
-				switch grouping {
-				case .Block(let blockView):
+				var x = gesture.view.center.x
+				for blockView in grouping {
 					let animation = positionAnimationForBlockView(blockView)
-//					let indexDelta = i * (gesture.velocityInView(view).x > 0 ? -1 : 1)
-					let indexDelta = 0
-					let separation = CGFloat(0.0)
-					let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: y)
+					let xSeparation = CGFloat(18 - grouping.count * 2.0)
+					let newToValue = CGPoint(x: x, y: y)
 					animation.toValue = NSValue(CGPoint: newToValue)
-				case .Rod(let blockViews):
-					var x = gesture.view.center.x
-					for blockView in blockViews {
-						let animation = positionAnimationForBlockView(blockView)
-						let xSeparation = CGFloat(18 - blockViews.count * 2.0)
-						let newToValue = CGPoint(x: x, y: y)
-						animation.toValue = NSValue(CGPoint: newToValue)
-						x += (xSeparation + blockView.bounds.size.width) * (horizontalDirection == .Right ? -1 : 1)
-					}
-				case .Square(let blockViews):
-					abort()
+					x += (xSeparation + blockView.bounds.size.width) * (horizontalDirection == .Right ? -1 : 1)
 				}
 
 				let ySeparation = CGFloat(20)
