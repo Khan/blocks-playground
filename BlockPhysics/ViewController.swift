@@ -223,11 +223,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			gesture.view.pop_addAnimation(draggingBlockAnimation, forKey: "position")
 
 			for grouping in draggingChain {
+				var x = gesture.view.center.x
 				for blockView in grouping {
-					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-						blockView.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
-					}, completion: nil)
-
 					var newBlockGrouping = grouping
 					switch grouping {
 					case .Block: break
@@ -239,6 +236,21 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 						abort()
 					}
 					blockViewsToBlockGroupings[blockView] = newBlockGrouping
+
+					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
+						blockView.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
+					}, completion: nil)
+
+					switch newBlockGrouping {
+					case .Block: break
+					case .Rod:
+						let animation = positionAnimationForBlockView(blockView)
+						let newToValue = CGPoint(x: x, y: animation.toValue.CGPointValue().y)
+						animation.toValue = NSValue(CGPoint: newToValue)
+						x += (self.blockSize - 1) * (horizontalDirection == .Right ? -1 : 1)
+					case .Square:
+						abort()
+					}
 				}
 			}
 /*
