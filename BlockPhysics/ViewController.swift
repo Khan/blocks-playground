@@ -33,6 +33,11 @@ enum BlockGrouping: SequenceType {
 		}
 	}
 
+	func firstBlock() -> BlockView {
+		var generator =  generate()
+		return generator.next()!
+	}
+
 	var count: Int {
 		switch self {
 		case .Block: return 1
@@ -142,6 +147,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		}
 	}
 
+	func layoutBlockGrouping(blockGrouping: BlockGrouping, givenAnchorPoint anchorPoint: CGPoint, anchorBlockView: BlockView) {
+		var x = anchorPoint.x
+		for blockView in blockGrouping {
+			let animation = positionAnimationForBlockView(blockView)
+			let xSeparation = CGFloat(18 - blockGrouping.count * 2.0)
+			let newToValue = CGPoint(x: x, y: anchorPoint.y)
+			animation.toValue = NSValue(CGPoint: newToValue)
+			x += (xSeparation + blockView.bounds.size.width) * (horizontalDirection == .Right ? -1 : 1)
+		}
+	}
+
 	func handlePan(gesture: UIPanGestureRecognizer) {
 		let gestureLocation = gesture.locationInView(view)
 		let blockIndex = find(blockViews, gesture.view)!
@@ -204,15 +220,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 			var y = gesture.view.center.y
 			for grouping in draggingChain {
-				var x = gesture.view.center.x
-				for blockView in grouping {
-					let animation = positionAnimationForBlockView(blockView)
-					let xSeparation = CGFloat(18 - grouping.count * 2.0)
-					let newToValue = CGPoint(x: x, y: y)
-					animation.toValue = NSValue(CGPoint: newToValue)
-					x += (xSeparation + blockView.bounds.size.width) * (horizontalDirection == .Right ? -1 : 1)
-				}
-
+				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: gesture.view.center.x, y: y), anchorBlockView: gesture.view)
 				let ySeparation = CGFloat(20)
 				y += (ySeparation + blockSize) * (verticalDirection == .Down ? -1 : 1)
 			}
@@ -222,60 +230,55 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			draggingBlockAnimation.fromValue = draggingBlockAnimation.toValue
 			gesture.view.pop_addAnimation(draggingBlockAnimation, forKey: "position")
 
+			var groupingsToCommit: [BlockGrouping] = []
 			for grouping in draggingChain {
+				switch grouping {
+				case .Block:
+					groupingsToCommit.append(grouping)
+				case .Rod:
+					if grouping.count < 10 {
+						for blockView in grouping {
+							groupingsToCommit.append(.Block(blockView))
+						}
+					} else {
+						groupingsToCommit.append(grouping)
+					}
+				case .Square:
+					abort()
+				}
+			}
+
+			for grouping in groupingsToCommit {
 				var x = gesture.view.center.x
 				for blockView in grouping {
-					var newBlockGrouping = grouping
-					switch grouping {
-					case .Block: break
-					case .Rod:
-						if grouping.count < 10 {
-							newBlockGrouping = .Block(blockView)
-						}
-					case .Square:
-						abort()
-					}
-					blockViewsToBlockGroupings[blockView] = newBlockGrouping
+					blockViewsToBlockGroupings[blockView] = grouping
 
 					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
 						blockView.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
 					}, completion: nil)
-
-					switch newBlockGrouping {
-					case .Block: break
-					case .Rod:
-						let animation = positionAnimationForBlockView(blockView)
-						let newToValue = CGPoint(x: x, y: animation.toValue.CGPointValue().y)
-						animation.toValue = NSValue(CGPoint: newToValue)
-						x += (self.blockSize - 1) * (horizontalDirection == .Right ? -1 : 1)
-					case .Square:
-						abort()
-					}
 				}
+
+				let firstBlockAnimation = blockViewsToAnimations[grouping.firstBlock()]!
+				let firstBlockAnimationToPoint = firstBlockAnimation.toValue.CGPointValue()
+				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: firstBlockAnimationToPoint.x, y: firstBlockAnimationToPoint.y), anchorBlockView: grouping.firstBlock())
 			}
-/*
-			for i in 0..<draggingChain.count {
-				let animation = positionAnimationForBlockView(draggingChain[i])
-				let indexDelta = i - find(draggingChain, gesture.view)!
-				let separation: CGFloat = draggingChain.count < 10 ? blockSize * 1.25 : -1.0
-				let newToValue = CGPoint(x: gesture.view.center.x + CGFloat(indexDelta) * (separation + gesture.view.bounds.size.width), y: gesture.view.center.y)
-				animation.toValue = NSValue(CGPoint: newToValue)
-				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-					self.draggingChain[i].bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
-				}, completion: nil)
-			}*/
 		default:
 			break
 		}
 	}
 
 	func handleLift(gesture: UIGestureRecognizer) {
+		let hitView = gesture.view as BlockView
 		switch gesture.state {
 		case .Began:
-			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-				let leadingMagnificationScale = CGFloat(spec.doubleForKey("leadingMagnificationScale"))
-				gesture.view.bounds = CGRectMake(0, 0, self.blockSize * leadingMagnificationScale, self.blockSize * leadingMagnificationScale)
-			}, completion: nil)
+			for blockView in blockViewsToBlockGroupings[hitView]! {
+				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
+					let leadingMagnificationScale = CGFloat(spec.doubleForKey("leadingMagnificationScale"))
+					let trailingMagnificationScale = CGFloat(spec.doubleForKey("trailingMagnificationScale"))
+					let magnificationScale = (blockView == hitView) ? leadingMagnificationScale : trailingMagnificationScale
+					blockView.bounds = CGRectMake(0, 0, self.blockSize * magnificationScale, self.blockSize * magnificationScale)
+				}, completion: nil)
+			}
 			gesture.view.layer.zPosition = 100
 		case .Ended:
 			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
