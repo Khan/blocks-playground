@@ -151,12 +151,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		let xSeparation = CGFloat(18 - blockGrouping.count * 2.0)
 		let blocks = Array(blockGrouping)
 		let anchorBlockIndex = find(blocks, anchorBlockView)!
+
+		let activeHorizontalDirection = (anchorBlockIndex == 0 || anchorBlockIndex == blocks.count - 1) ? horizontalDirection : .Left
+
 		for blockIndex in 0..<blocks.count {
 			let blockView = blocks[blockIndex]
 			let indexDelta = blockIndex - anchorBlockIndex
 			let animation = positionAnimationForBlockView(blockView)
 
-			let x = anchorPoint.x + (xSeparation + blockView.bounds.size.width) * CGFloat(indexDelta) * (horizontalDirection == .Right ? -1 : 1)
+			let x = anchorPoint.x + (xSeparation + blockView.bounds.size.width) * CGFloat(indexDelta) * (activeHorizontalDirection == .Right ? -1 : 1)
 			let newToValue = CGPoint(x: x, y: anchorPoint.y)
 			animation.toValue = NSValue(CGPoint: newToValue)
 		}
@@ -254,7 +257,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				}
 			}
 
-			for grouping in groupingsToCommit {
+			for groupingIndex in 0..<groupingsToCommit.count {
+				let grouping = groupingsToCommit[groupingIndex]
 				var x = gesture.view.center.x
 				for blockView in grouping {
 					blockViewsToBlockGroupings[blockView] = grouping
@@ -264,9 +268,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 					}, completion: nil)
 				}
 
-				let firstBlockAnimation = blockViewsToAnimations[grouping.firstBlock()]!
-				let firstBlockAnimationToPoint = firstBlockAnimation.toValue.CGPointValue()
-				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: firstBlockAnimationToPoint.x, y: firstBlockAnimationToPoint.y), anchorBlockView: grouping.firstBlock())
+				let anchorBlockView = groupingIndex == 0 ? gesture.view : grouping.firstBlock()
+				let anchorBlockAnimation = blockViewsToAnimations[anchorBlockView]!
+				let anchorAnimationToPoint = anchorBlockAnimation.toValue.CGPointValue()
+				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView)
 			}
 		default:
 			break
