@@ -275,9 +275,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 	func handleLift(gesture: UIGestureRecognizer) {
 		let hitView = gesture.view as BlockView
+		let hitGrouping = blockViewsToBlockGroupings[hitView]!
 		switch gesture.state {
 		case .Began:
-			for blockView in blockViewsToBlockGroupings[hitView]! {
+			for blockView in hitGrouping {
 				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
 					let leadingMagnificationScale = CGFloat(spec.doubleForKey("leadingMagnificationScale"))
 					let trailingMagnificationScale = CGFloat(spec.doubleForKey("trailingMagnificationScale"))
@@ -285,12 +286,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 					blockView.bounds = CGRectMake(0, 0, self.blockSize * magnificationScale, self.blockSize * magnificationScale)
 				}, completion: nil)
 			}
+			layoutBlockGrouping(hitGrouping, givenAnchorPoint: gesture.locationInView(view), anchorBlockView: hitView)
 			gesture.view.layer.zPosition = 100
 		case .Ended:
 			UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
 				gesture.view.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
 				}, completion: nil)
 			gesture.view.layer.zPosition = 0
+			layoutBlockGrouping(hitGrouping, givenAnchorPoint: gesture.locationInView(view), anchorBlockView: hitView)
 		default:
 			break
 		}
