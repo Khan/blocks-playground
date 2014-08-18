@@ -103,18 +103,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			liftGesture.minimumPressDuration = 0
 			liftGesture.delegate = self
 			blockView.addGestureRecognizer(liftGesture)
-		}
 
-		spec.withDoubleForKey("blockSize", owner: self) { ($0 as ViewController!).blockSize = CGFloat($1) }
-
-		for i in 0..<(numberOfBlocks) {
 			let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPosition)
 			var toPoint: CGPoint = blockViews[i].center
 			springAnimation.toValue = NSValue(CGPoint: toPoint)
 			springAnimation.removedOnCompletion = false;
 			blockViewsToAnimations[blockViews[i]] = springAnimation
 			blockViews[i].pop_addAnimation(springAnimation, forKey: positionAnimationKey)
+
+			blockViewsToBlockGroupings[blockView] = .Block(blockView)
 		}
+
+		spec.withDoubleForKey("blockSize", owner: self) { ($0 as ViewController!).blockSize = CGFloat($1) }
 	}
 
 	func positionAnimationForBlockView(blockView: BlockView) -> POPSpringAnimation {
@@ -147,8 +147,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		let blockIndex = find(blockViews, gesture.view)!
 		switch gesture.state {
 		case .Began:
-			let grouping = blockViewsToBlockGroupings[gesture.view]
-			draggingChain = [grouping ?? .Block(gesture.view)]
+			draggingChain = [blockViewsToBlockGroupings[gesture.view]!]
 			gesture.view.pop_removeAnimationForKey("position")
 
 			horizontalDirection = gesture.velocityInView(view).x > 0 ? .Right : .Left
