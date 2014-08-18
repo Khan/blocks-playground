@@ -62,4 +62,11 @@
  "sliderValue": 20.0,
  "sliderMinValue": 1.0
  },
+ {
+ "sliderMaxValue": 2000,
+ "key": "velocityThreshold",
+ "label": "Block direction reverse velocity threshold",
+ "sliderValue": 150.0,
+ "sliderMinValue": 1.0
+ },
 ]

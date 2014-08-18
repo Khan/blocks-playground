@@ -159,7 +159,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			gesture.view.center.y += translation.y
 
 			let gestureVelocity = gesture.velocityInView(view)
-			let velocityThreshold = CGFloat(100)
+			let velocityThreshold = CGFloat(spec.doubleForKey("velocityThreshold"))
 			if horizontalDirection == .Left && (gestureVelocity.x > velocityThreshold) {
 				horizontalDirection = .Right
 			} else if horizontalDirection == .Right && gestureVelocity.x < -velocityThreshold {
