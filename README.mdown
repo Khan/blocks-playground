@@ -1,3 +1,5 @@
 # Blocks playground
 
-Marcos and Andy are playing around with an interactive sandbox for building place value intuition. This is a low-fi prototype of some of the ideas. Search mobile-blackhole archive for "place value" for more notes.
+Marcos and Andy are playing around with an interactive sandbox for building place value intuition. This is a low-fi prototype of some of the ideas.
+
+[Follow along on Asana](https://app.asana.com/0/15625326458775/15625326458775).
