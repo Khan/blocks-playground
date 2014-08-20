@@ -1,0 +1,3 @@
+# Blocks playground
+
+Marcos and Andy are playing around with an interactive sandbox for building place value intuition. This is a low-fi prototype of some of the ideas. Search mobile-blackhole archive for "place value" for more notes.
