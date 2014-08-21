@@ -68,8 +68,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var blockViewsToAnimations: [BlockView: POPSpringAnimation] = [:]
 	var blockViewsToBlockGroupings: [BlockView: BlockGrouping] = [:]
 
-	var horizontalDirection: HorizontalDirection = .Right
-	var verticalDirection: VerticalDirection = .Up
+	var horizontalDirection: HorizontalDirection = .Left
+	var verticalDirection: VerticalDirection = .Down
 
 	override func loadView() {
 		super.loadView()
@@ -78,48 +78,74 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 		view.backgroundColor = UIColor.whiteColor()
 
-		let numberOfBlocks = 50
+		let numberOfBlocks = 40
 		let blocksPerRow = 12
 		blockViews = []
 		blockViews.reserveCapacity(numberOfBlocks)
 
 		for i in 0..<numberOfBlocks {
 			let y = CGFloat(i / blocksPerRow * 200 + 80)
-			let blockView = UIView()
-			blockView.center.x = 25 + 60 * CGFloat(i % blocksPerRow)
-			blockView.center.y = CGFloat(i / blocksPerRow * 200 + 80)
-			spec.withDoubleForKey("blockSize", owner: blockView) {
-				let view = $0 as UIView!
-				let size = CGFloat($1)
-				view.bounds.size.width = size
-				view.bounds.size.height = size
-			}
-			spec.withDoubleForKey("blockBackgroundWhite", owner: blockView) { ($0 as UIView!).backgroundColor = UIColor(white: CGFloat($1), alpha: 1) }
-			spec.withDoubleForKey("blockBorderWhite", owner: blockView) { ($0 as UIView!).layer.borderColor = UIColor(white: CGFloat($1), alpha: 1).CGColor }
-			blockView.layer.borderWidth = 1
-			blockViews.append(blockView)
-			view.addSubview(blockView)
+			let blockView = addBlockAtPoint(CGPoint(x: 25 + 60 * CGFloat(i % blocksPerRow), y: y))
+		}
 
-			let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
-			panGesture.delegate = self
-			blockView.addGestureRecognizer(panGesture)
 
-			let liftGesture = UILongPressGestureRecognizer(target: self, action: "handleLift:")
-			liftGesture.minimumPressDuration = 0
-			liftGesture.delegate = self
-			blockView.addGestureRecognizer(liftGesture)
-
-			let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPosition)
-			var toPoint: CGPoint = blockViews[i].center
-			springAnimation.toValue = NSValue(CGPoint: toPoint)
-			springAnimation.removedOnCompletion = false;
-			blockViewsToAnimations[blockViews[i]] = springAnimation
-			blockViews[i].pop_addAnimation(springAnimation, forKey: positionAnimationKey)
-
-			blockViewsToBlockGroupings[blockView] = .Block(blockView)
+		let numberOfRods = 8
+		let rodsPerRow = 2
+		for i in 0..<numberOfRods {
+			let y = CGFloat(i / rodsPerRow * 50 + 550)
+			addRowAtPoint(CGPoint(x: 350 + 200 * CGFloat(i % rodsPerRow), y: y))
 		}
 
 		spec.withDoubleForKey("blockSize", owner: self) { ($0 as ViewController!).blockSize = CGFloat($1) }
+	}
+
+	func addBlockAtPoint(point: CGPoint) -> BlockView {
+		let blockView = UIView()
+		blockView.center = point
+		spec.withDoubleForKey("blockSize", owner: blockView) {
+			let view = $0 as UIView!
+			let size = CGFloat($1)
+			view.bounds.size.width = size
+			view.bounds.size.height = size
+		}
+		spec.withDoubleForKey("blockBackgroundWhite", owner: blockView) { ($0 as UIView!).backgroundColor = UIColor(white: CGFloat($1), alpha: 1) }
+		spec.withDoubleForKey("blockBorderWhite", owner: blockView) { ($0 as UIView!).layer.borderColor = UIColor(white: CGFloat($1), alpha: 1).CGColor }
+		blockView.layer.borderWidth = 1
+		blockViews.append(blockView)
+		view.addSubview(blockView)
+
+		let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
+		panGesture.delegate = self
+		blockView.addGestureRecognizer(panGesture)
+
+		let liftGesture = UILongPressGestureRecognizer(target: self, action: "handleLift:")
+		liftGesture.minimumPressDuration = 0
+		liftGesture.delegate = self
+		blockView.addGestureRecognizer(liftGesture)
+
+		let springAnimation = POPSpringAnimation(propertyNamed: kPOPLayerPosition)
+		var toPoint: CGPoint = blockView.center
+		springAnimation.toValue = NSValue(CGPoint: toPoint)
+		springAnimation.removedOnCompletion = false;
+		blockViewsToAnimations[blockView] = springAnimation
+		blockView.pop_addAnimation(springAnimation, forKey: positionAnimationKey)
+
+		blockViewsToBlockGroupings[blockView] = .Block(blockView)
+
+		return blockView
+	}
+
+	func addRowAtPoint(point: CGPoint) -> [BlockView] {
+		let blockViews: [BlockView] = (0..<10).map { _ in self.addBlockAtPoint(point) }
+		let grouping = BlockGrouping.Rod(blockViews)
+		for blockView in blockViews {
+			blockViewsToBlockGroupings[blockView] = grouping
+		}
+		layoutBlockGrouping(grouping, givenAnchorPoint: point, anchorBlockView: grouping.firstBlock())
+		for blockView in blockViews {
+			blockView.center = blockViewsToAnimations[blockView]!.toValue.CGPointValue()
+		}
+		return blockViews
 	}
 
 	func positionAnimationForBlockView(blockView: BlockView) -> POPSpringAnimation {
