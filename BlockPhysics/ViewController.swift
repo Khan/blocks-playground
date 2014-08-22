@@ -8,7 +8,7 @@
 
 import UIKit
 
-let spec = KFTunableSpec.specNamed("Blocks") as KFTunableSpec
+let spec = TunableSpec(name: "Blocks")
 
 typealias BlockView = UIView
 
@@ -74,7 +74,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	override func loadView() {
 		super.loadView()
 
-		self.view.addGestureRecognizer(spec.twoFingerTripleTapGestureRecognizer())
+		self.view.addGestureRecognizer(spec.twoFingerTripleTapGestureRecognizer)
 
 		view.backgroundColor = UIColor.whiteColor()
 
@@ -96,20 +96,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			addRowAtPoint(CGPoint(x: 350 + 200 * CGFloat(i % rodsPerRow), y: y))
 		}
 
-		spec.withDoubleForKey("blockSize", owner: self) { ($0 as ViewController!).blockSize = CGFloat($1) }
+		spec.withKey("blockSize", owner: self) { $0.blockSize = $1 }
 	}
 
 	func addBlockAtPoint(point: CGPoint) -> BlockView {
 		let blockView = UIView()
 		blockView.center = point
-		spec.withDoubleForKey("blockSize", owner: blockView) {
-			let view = $0 as UIView!
-			let size = CGFloat($1)
-			view.bounds.size.width = size
-			view.bounds.size.height = size
+		spec.withKey("blockSize", owner: blockView) { (blockView: UIView, size: CGFloat) in
+			blockView.bounds.size.width = size
+			blockView.bounds.size.height = size
 		}
-		spec.withDoubleForKey("blockBackgroundWhite", owner: blockView) { ($0 as UIView!).backgroundColor = UIColor(white: CGFloat($1), alpha: 1) }
-		spec.withDoubleForKey("blockBorderWhite", owner: blockView) { ($0 as UIView!).layer.borderColor = UIColor(white: CGFloat($1), alpha: 1).CGColor }
+		spec.withKey("blockBackgroundWhite", owner: blockView) { $0.backgroundColor = UIColor(white: $1, alpha: 1) }
+		spec.withKey("blockBorderWhite", owner: blockView) { $0.layer.borderColor = UIColor(white: $1, alpha: 1).CGColor }
 		blockView.layer.borderWidth = 1
 		blockViews.append(blockView)
 		view.addSubview(blockView)
@@ -166,10 +164,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			let blockDestination = blockViewsToAnimations[blockView]!.toValue.CGPointValue()
 			let deltaPoint = CGPoint(x: draggingView.center.x - blockDestination.x, y: draggingView.center.y - blockDestination.y)
 			let distance = sqrt(deltaPoint.x*deltaPoint.x + deltaPoint.y*deltaPoint.y)
-			let unitDistance = Double(distance / blockSize)
+			let unitDistance = distance / blockSize
 			let animation = blockViewsToAnimations[blockView]!
-			animation.springSpeed = CGFloat(max(spec.doubleForKey("blockSpeedIntercept") - spec.doubleForKey("blockSpeedNegativeSlope") * unitDistance, 1))
-			animation.springBounciness = CGFloat(min(spec.doubleForKey("blockSpringinessIntercept") + spec.doubleForKey("blockSpringinessSlope") * unitDistance, 20))
+			animation.springSpeed = max(spec["blockSpeedIntercept"] - spec["blockSpeedNegativeSlope"] * unitDistance, 1)
+			animation.springBounciness = min(spec["blockSpringinessIntercept"] + spec["blockSpringinessSlope"] * unitDistance, 20)
 		}
 	}
 
@@ -208,7 +206,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			gesture.view.center.y += translation.y
 
 			let gestureVelocity = gesture.velocityInView(view)
-			let velocityThreshold = CGFloat(spec.doubleForKey("velocityThreshold"))
+			let velocityThreshold: CGFloat = spec["velocityThreshold"]
 			if horizontalDirection == .Left && (gestureVelocity.x > velocityThreshold) {
 				horizontalDirection = .Right
 			} else if horizontalDirection == .Right && gestureVelocity.x < -velocityThreshold {
@@ -256,7 +254,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 					}
 					for hitBlock in hitGroup {
 					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-						let trailingMagnificationScale = CGFloat(spec.doubleForKey("trailingMagnificationScale"))
+						let trailingMagnificationScale: CGFloat = spec["trailingMagnificationScale"]
 						hitBlock.bounds = CGRectMake(0, 0, self.blockSize * trailingMagnificationScale, self.blockSize * trailingMagnificationScale)
 					}, completion: nil)
 					}
@@ -323,8 +321,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		case .Began:
 			for blockView in hitGrouping {
 				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-					let leadingMagnificationScale = CGFloat(spec.doubleForKey("leadingMagnificationScale"))
-					let trailingMagnificationScale = CGFloat(spec.doubleForKey("trailingMagnificationScale"))
+					let leadingMagnificationScale: CGFloat = spec["leadingMagnificationScale"]
+					let trailingMagnificationScale: CGFloat = spec["trailingMagnificationScale"]
 					let magnificationScale = (blockView == hitView) ? leadingMagnificationScale : trailingMagnificationScale
 					blockView.bounds = CGRectMake(0, 0, self.blockSize * magnificationScale, self.blockSize * magnificationScale)
 				}, completion: nil)
@@ -342,4 +340,3 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		}
 	}
 }
-

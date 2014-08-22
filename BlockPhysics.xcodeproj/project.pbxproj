@@ -10,6 +10,7 @@
 		20E0C6FDB5C640E0933E0542 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A87DD38CD9494B2F9178F548 /* libPods.a */; };
 		EBC1D8C3199EB96F00244A6C /* KFTunableSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */; };
 		EBC1D8C5199EB99000244A6C /* Blocks.json in Resources */ = {isa = PBXBuildFile; fileRef = EBC1D8C4199EB99000244A6C /* Blocks.json */; };
+		EBCD7BA019A6F83A0042BB5D /* TunableSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBCD7B9F19A6F83A0042BB5D /* TunableSpec.swift */; };
 		EBDA77B0199AEDBF00860635 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDA77AF199AEDBF00860635 /* AppDelegate.swift */; };
 		EBDA77B2199AEDBF00860635 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDA77B1199AEDBF00860635 /* ViewController.swift */; };
 		EBDA77B5199AEDBF00860635 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EBDA77B3199AEDBF00860635 /* Main.storyboard */; };
@@ -33,6 +34,7 @@
 		EBC1D8C1199EB96F00244A6C /* KFTunableSpec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KFTunableSpec.h; sourceTree = "<group>"; };
 		EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KFTunableSpec.m; sourceTree = "<group>"; };
 		EBC1D8C4199EB99000244A6C /* Blocks.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Blocks.json; sourceTree = "<group>"; };
+		EBCD7B9F19A6F83A0042BB5D /* TunableSpec.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TunableSpec.swift; sourceTree = "<group>"; };
 		EBDA77AA199AEDBF00860635 /* BlockPhysics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BlockPhysics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EBDA77AE199AEDBF00860635 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EBDA77AF199AEDBF00860635 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -103,6 +105,7 @@
 				EBDA77CC199C202400860635 /* BlockPhysics-Bridging-Header.h */,
 				EBC1D8C1199EB96F00244A6C /* KFTunableSpec.h */,
 				EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */,
+				EBCD7B9F19A6F83A0042BB5D /* TunableSpec.swift */,
 			);
 			path = BlockPhysics;
 			sourceTree = "<group>";
@@ -270,6 +273,7 @@
 			files = (
 				EBDA77B2199AEDBF00860635 /* ViewController.swift in Sources */,
 				EBC1D8C3199EB96F00244A6C /* KFTunableSpec.m in Sources */,
+				EBCD7BA019A6F83A0042BB5D /* TunableSpec.swift in Sources */,
 				EBDA77B0199AEDBF00860635 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
