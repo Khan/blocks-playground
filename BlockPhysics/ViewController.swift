@@ -224,7 +224,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			}
 
 			for block in blockViews {
-				if !contains(draggingChain, {$0.containsBlockView(block)}) && CGRectIntersectsRect(gesture.view.frame, block.frame) {
+				if block.pointInside(gesture.locationInView(block), withEvent: nil) && !contains(draggingChain, {$0.containsBlockView(block)}) {
 					let hitGroup = blockViewsToBlockGroupings[block]!
 					switch hitGroup {
 					case .Block:
