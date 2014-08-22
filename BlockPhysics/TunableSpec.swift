@@ -99,11 +99,11 @@ public class TunableSpec {
 	// MARK: Showing Tuning UI
 
 	// useful as a metrics dictionary in -[NSLayoutConstraint constraintsWithVisualFormat:options:metrics:views:]
-	public var dictionaryRepresentation: NSDictionary {
+	public func dictionaryRepresentation() -> NSDictionary {
 		return spec.dictionaryRepresentation()
 	}
 
-	public var twoFingerTripleTapGestureRecognizer: UIGestureRecognizer {
+	public func twoFingerTripleTapGestureRecognizer() -> UIGestureRecognizer {
 		return spec.twoFingerTripleTapGestureRecognizer()
 	}
 

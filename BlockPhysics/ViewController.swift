@@ -74,7 +74,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	override func loadView() {
 		super.loadView()
 
-		self.view.addGestureRecognizer(spec.twoFingerTripleTapGestureRecognizer)
+		self.view.addGestureRecognizer(spec.twoFingerTripleTapGestureRecognizer())
 
 		view.backgroundColor = UIColor.whiteColor()
 
