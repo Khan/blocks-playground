@@ -35,38 +35,38 @@
  "sliderMinValue": 8
  },
  {
- "sliderMaxValue": 3.0,
- "key": "blockSpringinessSlope",
- "label": "Block springiness-with-distance factor",
- "sliderValue": 0.65,
- "sliderMinValue": 0.0
- },
- {
- "sliderMaxValue": 5.0,
- "key": "blockSpringinessIntercept",
- "label": "Block springiness minimum",
- "sliderValue": 0.1,
- "sliderMinValue": 0.0
- },
- {
- "sliderMaxValue": 3.0,
- "key": "blockSpeedNegativeSlope",
- "label": "Block speed falloff rate",
- "sliderValue": 0.45,
- "sliderMinValue": 0.0
- },
- {
- "sliderMaxValue": 20.0,
- "key": "blockSpeedIntercept",
- "label": "Block speed maximum",
- "sliderValue": 20.0,
- "sliderMinValue": 1.0
- },
- {
  "sliderMaxValue": 2000,
  "key": "velocityThreshold",
  "label": "Block direction reverse velocity threshold",
  "sliderValue": 150.0,
  "sliderMinValue": 1.0
  },
-]
+ {
+ "sliderMaxValue": 50000,
+ "key": "nearTension",
+ "label": "Near Tension",
+ "sliderValue": 50000,
+ "sliderMinValue": 1
+ },
+ {
+ "sliderMaxValue": 1000,
+ "key": "nearFriction",
+ "label": "Near Friction",
+ "sliderValue": 400,
+ "sliderMinValue": 1
+ },
+ {
+ "sliderMaxValue": 1,
+ "key": "tensionFalloff",
+ "label": "Tension Falloff",
+ "sliderValue": 0.36,
+ "sliderMinValue": 0
+ },
+ {
+ "sliderMaxValue": 0.66,
+ "key": "frictionFalloff",
+ "label": "Friction Falloff",
+ "sliderValue": 0.20,
+ "sliderMinValue": 0
+ },
+ ]

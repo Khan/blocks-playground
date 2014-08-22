@@ -164,10 +164,14 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			let blockDestination = blockViewsToAnimations[blockView]!.toValue.CGPointValue()
 			let deltaPoint = CGPoint(x: draggingView.center.x - blockDestination.x, y: draggingView.center.y - blockDestination.y)
 			let distance = sqrt(deltaPoint.x*deltaPoint.x + deltaPoint.y*deltaPoint.y)
-			let unitDistance = distance / blockSize
+			let unitDistance = min(distance / blockSize, 12)
 			let animation = blockViewsToAnimations[blockView]!
-			animation.springSpeed = max(spec["blockSpeedIntercept"] - spec["blockSpeedNegativeSlope"] * unitDistance, 1)
-			animation.springBounciness = min(spec["blockSpringinessIntercept"] + spec["blockSpringinessSlope"] * unitDistance, 20)
+			
+			let friction = spec["nearFriction"] * exp(-1 * spec["frictionFalloff"] * unitDistance)
+			let tension = spec["nearTension"] * exp(-1 * spec["tensionFalloff"] * unitDistance)
+			animation.dynamicsFriction = friction
+			animation.dynamicsMass = 1
+			animation.dynamicsTension = tension
 		}
 	}
 
@@ -239,24 +243,23 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 								views.insert(block, atIndex: 0)
 								draggingChain.insert(.Rod(views), atIndex: 1)
 							}
-							for grouping in draggingChain {
-								updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: gesture.view)
-							}
 						case .Square(var views):
 							abort()
 						}
 					case .Rod:
 						draggingChain.insert(hitGroup, atIndex: 1)
-						for grouping in draggingChain {
-							updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: gesture.view)
-						}
 					case .Square: abort()
 					}
+
+					for grouping in draggingChain {
+						updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: gesture.view)
+					}
+
 					for hitBlock in hitGroup {
-					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-						let trailingMagnificationScale: CGFloat = spec["trailingMagnificationScale"]
-						hitBlock.bounds = CGRectMake(0, 0, self.blockSize * trailingMagnificationScale, self.blockSize * trailingMagnificationScale)
-					}, completion: nil)
+						UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
+							let trailingMagnificationScale: CGFloat = spec["trailingMagnificationScale"]
+							hitBlock.bounds = CGRectMake(0, 0, self.blockSize * trailingMagnificationScale, self.blockSize * trailingMagnificationScale)
+							}, completion: nil)
 					}
 				}
 			}
@@ -327,6 +330,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 					blockView.bounds = CGRectMake(0, 0, self.blockSize * magnificationScale, self.blockSize * magnificationScale)
 				}, completion: nil)
 			}
+			updateAnimationConstantsForBlockGrouping(hitGrouping, givenDraggingView: gesture.view)
 			layoutBlockGrouping(hitGrouping, givenAnchorPoint: gesture.locationInView(view), anchorBlockView: hitView)
 			gesture.view.layer.zPosition = 100
 		case .Ended:
