@@ -18,7 +18,7 @@ class BlockView: UIView {
 	}
 }
 
-enum BlockGrouping: SequenceType {
+enum BlockGrouping: SequenceType, Printable {
 	case Block(BlockView)
 	case Rod([BlockView])
 	case Square([BlockView])
@@ -40,7 +40,7 @@ enum BlockGrouping: SequenceType {
 	}
 
 	func firstBlock() -> BlockView {
-		var generator =  generate()
+		var generator = generate()
 		return generator.next()!
 	}
 
@@ -50,6 +50,17 @@ enum BlockGrouping: SequenceType {
 		case .Rod(let views): return views.count
 		case .Square(let views): return views.count
 		}
+	}
+
+	var description: String {
+		var output = "("
+		switch self {
+		case .Block: output += "Block: "
+		case .Rod: output += "Rod: "
+		case .Square: output += "Square: "
+		}
+		output += "(\(count) views))"
+		return output
 	}
 }
 
@@ -95,7 +106,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		}
 
 
-		let numberOfRods = 8
+		let numberOfRods = 12
 		let rodsPerRow = 2
 		for i in 0..<numberOfRods {
 			let y = CGFloat(i / rodsPerRow * 50 + 550)
@@ -181,22 +192,28 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		}
 	}
 
-	func layoutBlockGrouping(blockGrouping: BlockGrouping, givenAnchorPoint anchorPoint: CGPoint, anchorBlockView: BlockView) {
-		let xSeparation = CGFloat(18 - blockGrouping.count * 2.0)
+	func layoutBlockGrouping(blockGrouping: BlockGrouping, givenAnchorPoint anchorPoint: CGPoint, anchorBlockView: BlockView) -> CGFloat {
+		let xSeparation = max(CGFloat(18.0 - blockGrouping.count * 2.0), -1)
+		let ySeparation = max(CGFloat(18.0 - blockGrouping.count / 5.0), -1)
 		let blocks = Array(blockGrouping)
 		let anchorBlockIndex = find(blocks, anchorBlockView)!
 
 		let activeHorizontalDirection = (anchorBlockIndex == 0 || anchorBlockIndex == blocks.count - 1) ? horizontalDirection : .Left
+		let activeVerticalDirection = (anchorBlockIndex == 0 || anchorBlockIndex == blocks.count - 1) ? verticalDirection : .Up
 
 		for blockIndex in 0..<blocks.count {
 			let blockView = blocks[blockIndex]
 			let indexDelta = blockIndex - anchorBlockIndex
 			let animation = positionAnimationForBlockView(blockView)
 
-			let x = anchorPoint.x + (xSeparation + blockView.bounds.size.width) * CGFloat(indexDelta) * (activeHorizontalDirection == .Right ? -1 : 1)
-			let newToValue = CGPoint(x: x, y: anchorPoint.y)
+			let x = anchorPoint.x + (xSeparation + blockView.bounds.size.width) * CGFloat(indexDelta % 10) * (activeHorizontalDirection == .Right ? -1 : 1)
+			let y = anchorPoint.y + (ySeparation + blockView.bounds.size.height) * CGFloat(indexDelta / 10) * (activeVerticalDirection == .Down ? -1 : 1)
+			let newToValue = CGPoint(x: x, y: y)
 			animation.toValue = NSValue(CGPoint: newToValue)
 		}
+
+		let numberOfRows = Int(ceil(Double(blocks.count) / 10.0))
+		return CGFloat(numberOfRows) * blockSize * spec["trailingMagnificationScale"]
 	}
 
 	func handlePan(gesture: UIPanGestureRecognizer) {
@@ -233,9 +250,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			for block in blockViews {
 				if block.pointInside(gesture.locationInView(block), withEvent: nil) && !contains(draggingChain, {$0.containsBlockView(block)}) {
 					let hitGroup = blockViewsToBlockGroupings[block]!
+					let firstGroup = draggingChain[0]
 					switch hitGroup {
 					case .Block:
-						let firstGroup = draggingChain[0]
 						switch firstGroup {
 						case .Block(let view):
 							draggingChain[0] = .Rod([view, block])
@@ -249,15 +266,35 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 								views.removeAtIndex(find(views, touchedBlock)!)
 								views.insert(block, atIndex: 0)
 								draggingChain.insert(.Rod(views), atIndex: 1)
+								// TODO: handle coalescing
 							}
 						case .Square(var views):
-							abort()
+							draggingChain[0] = .Block(touchedBlock)
+							views.removeAtIndex(find(views, touchedBlock)!)
+							views.insert(block, atIndex: 0)
+							draggingChain.insert(.Square(views), atIndex: 1)
 						}
-					case .Rod:
+					case .Rod(var hitRodViews):
+						switch firstGroup {
+						case .Block:
+							draggingChain.insert(hitGroup, atIndex: 1)
+						case .Rod(var holdingRodViews):
+							if holdingRodViews.count < 10 {
+								draggingChain.insert(hitGroup, atIndex: 1)
+							} else {
+								draggingChain[0] = .Square(Array(holdingRodViews) + hitRodViews)
+							}
+						case .Square(var holdingSquareViews):
+							if (firstGroup.count < 100) {
+								draggingChain[0] = .Square(Array(holdingSquareViews) + hitRodViews)
+							} else {
+								draggingChain.insert(hitGroup, atIndex: 1)
+							}
+						}
+					case .Square(var hitSquareViews):
 						draggingChain.insert(hitGroup, atIndex: 1)
-					case .Square: abort()
 					}
-
+					println(draggingChain)
 					for grouping in draggingChain {
 						updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: touchedBlock)
 					}
@@ -275,9 +312,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			for groupingIndex in 0..<draggingChain.count {
 				let grouping = draggingChain[groupingIndex]
 				let anchorBlockView = groupingIndex == 0 ? touchedBlock : grouping.firstBlock()
-				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: touchedBlock.center.x, y: y), anchorBlockView: anchorBlockView)
-				let ySeparation = CGFloat(20)
-				y += (ySeparation + blockSize) * (verticalDirection == .Down ? -1 : 1)
+				let groupingHeight = layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: touchedBlock.center.x, y: y), anchorBlockView: anchorBlockView)
+				let verticalMargin: CGFloat = 20.0
+				y += (verticalMargin + groupingHeight) * (verticalDirection == .Down ? -1 : 1)
 			}
 		case .Ended:
 			let draggingBlockAnimation = positionAnimationForBlockView(touchedBlock)
@@ -299,7 +336,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 						groupingsToCommit.append(grouping)
 					}
 				case .Square:
-					abort()
+					let squareBlockViews: [BlockView] = Array(grouping)
+					if grouping.count < 100 {
+						for minimumIndex in stride(from: 0, to: grouping.count, by: 10) {
+							let boundIndex = min(minimumIndex + 10, grouping.count)
+							let rodBlocks: [BlockView] = Array(squareBlockViews[minimumIndex..<boundIndex])
+							groupingsToCommit.append(BlockGrouping.Rod(rodBlocks))
+						}
+					} else {
+						groupingsToCommit.append(grouping)
+					}
 				}
 			}
 
