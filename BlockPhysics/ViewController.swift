@@ -124,6 +124,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			blockView.bounds.size.height = size
 		}
 		spec.withKey("blockBackgroundWhite", owner: blockView) { $0.backgroundColor = UIColor(white: $1, alpha: 1) }
+
+		// Debug block coloring:
+		blockView.backgroundColor = UIColor(hue: point.x / 768.0, saturation: 1.0 - (point.y / 1024.0) * 0.3, brightness: 0.7 + (point.y / 1024.0) * 0.3, alpha: 1.0)
+
 		spec.withKey("blockBorderWhite", owner: blockView) { $0.layer.borderColor = UIColor(white: $1, alpha: 1).CGColor }
 		blockView.layer.borderWidth = 1
 		blockViews.append(blockView)
@@ -266,7 +270,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 						}
 					case .Rod(let secondRodViews):
 						if secondRodViews.count < 10 {
-							let newViews = secondRodViews + firstRodViews
+							let newViews = firstRodViews + secondRodViews
 							newChain[newChain.count-1] = .Rod(Array(newViews[0..<10]))
 							let remainderViews = Array(newViews[10..<newViews.count])
 							if remainderViews.count > 1 {
@@ -301,8 +305,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 							}
 						}
 					case .Square(let secondSquareViews):
-						// TODO handle incomplete square
-						abort()
+						newChain.append(newGrouping)
 					}
 				}
 			} else {
