@@ -207,11 +207,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 		for blockIndex in 0..<blocks.count {
 			let blockView = blocks[blockIndex]
-			let indexDelta = blockIndex - anchorBlockIndex
+			let columnDelta = blockIndex % 10 - anchorBlockIndex % 10
+			let rowDelta = blockIndex / 10 - anchorBlockIndex / 10
 			let animation = positionAnimationForBlockView(blockView)
 
-			let x = anchorPoint.x + (xSeparation + blockView.bounds.size.width) * CGFloat(indexDelta % 10) * (activeHorizontalDirection == .Right ? -1 : 1)
-			let y = anchorPoint.y + (ySeparation + blockView.bounds.size.height) * CGFloat(indexDelta / 10) * (activeVerticalDirection == .Down ? -1 : 1)
+			let x = anchorPoint.x + (xSeparation + blockView.bounds.size.width) * CGFloat(columnDelta) * (activeHorizontalDirection == .Right ? -1 : 1)
+			let y = anchorPoint.y + (ySeparation + blockView.bounds.size.height) * CGFloat(rowDelta) * (activeVerticalDirection == .Down ? -1 : 1)
 			let newToValue = CGPoint(x: x, y: y)
 			animation.toValue = NSValue(CGPoint: newToValue)
 		}
