@@ -244,7 +244,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				holdingSquareViews.insert(hitBlockView, atIndex: 0)
 				draggingChain.insert(.Square(holdingSquareViews), atIndex: 1)
 			case .Rod(var hitRodViews):
-				println("\nOld hit rod views: \(hitRodViews)")
 				holdingSquareViews.removeAtIndex(find(holdingSquareViews, touchedBlock)!)
 				holdingSquareViews.insert(hitRodViews.last!, atIndex: 0)
 				draggingChain[0] = .Square(holdingSquareViews)
@@ -252,8 +251,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				hitRodViews.insert(touchedBlock, atIndex: 0)
 				draggingChain.insert(.Rod(hitRodViews), atIndex: 0)
 				draggingChain[0] = .Rod(hitRodViews)
-				println("New hit rod views: \(hitRodViews)")
-				println("Touched view: \(touchedBlock)")
 			case .Square:
 				draggingChain.insert(hitGroup, atIndex: 1)
 			}
@@ -353,7 +350,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				if block.pointInside(gesture.locationInView(block), withEvent: nil) && !contains(draggingChain, {$0.containsBlockView(block)}) {
 					let hitGroup = blockViewsToBlockGroupings[block]!
 					incorporateGrouping(hitGroup, touchedBlock: touchedBlock)
-					println(draggingChain)
 					for grouping in draggingChain {
 						updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: touchedBlock)
 					}
