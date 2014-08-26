@@ -216,8 +216,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			animation.toValue = NSValue(CGPoint: newToValue)
 		}
 
-		let numberOfRows = Int(ceil(Double(blocks.count) / 10.0))
-		return CGFloat(numberOfRows) * blockSize * spec["trailingMagnificationScale"]
+		let firstY = blocks[0].center.y
+		let lastY = blocks.last!.center.y
+		let height = abs(lastY - firstY) + blockSize * spec["trailingMagnificationScale"]
+		return height
 	}
 
 	func incorporateGrouping(hitGroup: BlockGrouping, touchedBlock: BlockView) {
