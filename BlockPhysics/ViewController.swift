@@ -216,6 +216,103 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		return CGFloat(numberOfRows) * blockSize * spec["trailingMagnificationScale"]
 	}
 
+	func incorporateGrouping(hitGroup: BlockGrouping, touchedBlock: BlockView) {
+		let holdingGroup = draggingChain[0]
+		switch holdingGroup {
+		case .Block(let holdingBlockView):
+			draggingChain.insert(hitGroup, atIndex: 1)
+		case .Rod(var holdingRodViews):
+			switch hitGroup {
+			case .Block(let hitBlockView):
+				draggingChain[0] = .Block(touchedBlock)
+				holdingRodViews.removeAtIndex(find(holdingRodViews, touchedBlock)!)
+				holdingRodViews.insert(hitBlockView, atIndex: 0)
+				draggingChain.insert(.Rod(holdingRodViews), atIndex: 1)
+			case .Rod, .Square:
+				draggingChain.insert(hitGroup, atIndex: 1)
+			}
+		case .Square(var holdingSquareViews):
+			switch hitGroup {
+			case .Block(let hitBlockView):
+				// TODO DRY with rod case above
+				draggingChain[0] = .Block(touchedBlock)
+				holdingSquareViews.removeAtIndex(find(holdingSquareViews, touchedBlock)!)
+				holdingSquareViews.insert(hitBlockView, atIndex: 0)
+				draggingChain.insert(.Square(holdingSquareViews), atIndex: 1)
+			case .Rod:
+				draggingChain.insert(hitGroup, atIndex: 0)
+			case .Square:
+				draggingChain.insert(hitGroup, atIndex: 1)
+			}
+		}
+
+		draggingChain = reduce(draggingChain.reverse(), []) { chain, newGrouping in
+			var newChain = chain
+			if chain.count > 0 {
+				switch chain.last! {
+				case .Block(let firstBlockView):
+					switch newGrouping {
+					case .Block(let secondBlockView):
+						newChain[newChain.count-1] = .Rod([secondBlockView, firstBlockView])
+					case .Rod, .Square: abort()
+					}
+				case .Rod(let firstRodViews):
+					switch newGrouping {
+					case .Block(let secondBlockView):
+						if firstRodViews.count < 10 {
+							newChain[newChain.count-1] = .Rod([secondBlockView] + firstRodViews)
+						} else {
+							newChain.append(newGrouping)
+						}
+					case .Rod(let secondRodViews):
+						if secondRodViews.count < 10 {
+							let newViews = secondRodViews + firstRodViews
+							newChain[newChain.count-1] = .Rod(Array(newViews[0..<10]))
+							let remainderViews = Array(newViews[10..<newViews.count])
+							if remainderViews.count > 1 {
+								newChain.append(.Rod(remainderViews))
+							} else {
+								newChain.append(.Block(remainderViews[0]))
+							}
+						} else {
+							newChain[newChain.count-1] = .Square(secondRodViews + firstRodViews)
+						}
+					case .Square: abort()
+					}
+				case .Square(let firstSquareViews):
+					switch newGrouping {
+					case .Block(let secondBlockView):
+						newChain.append(newGrouping)
+					case .Rod(let secondRodViews):
+						if secondRodViews.count < 10 {
+							newChain.append(newGrouping)
+						} else {
+							let newSquareViews = secondRodViews + firstSquareViews
+							if newSquareViews.count <= 100 {
+								newChain[newChain.count-1] = .Square(newSquareViews)
+							} else {
+								newChain[newChain.count-1] = .Square(Array(newSquareViews[0..<100]))
+								let remainderViews = Array(newSquareViews[100..<newSquareViews.count])
+								if remainderViews.count > 1 {
+									newChain.append(.Rod(remainderViews))
+								} else {
+									newChain.append(.Block(remainderViews[0]))
+								}
+							}
+						}
+					case .Square(let secondSquareViews):
+						// TODO handle incomplete square
+						abort()
+					}
+				}
+			} else {
+				newChain = [newGrouping]
+			}
+
+			return newChain
+		}.reverse()
+	}
+
 	func handlePan(gesture: UIPanGestureRecognizer) {
 		let gestureLocation = gesture.locationInView(view)
 		let touchedBlock = gesture.view as BlockView
@@ -250,50 +347,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			for block in blockViews {
 				if block.pointInside(gesture.locationInView(block), withEvent: nil) && !contains(draggingChain, {$0.containsBlockView(block)}) {
 					let hitGroup = blockViewsToBlockGroupings[block]!
-					let firstGroup = draggingChain[0]
-					switch hitGroup {
-					case .Block:
-						switch firstGroup {
-						case .Block(let view):
-							draggingChain[0] = .Rod([view, block])
-							updateAnimationConstantsForBlockGrouping(draggingChain[0], givenDraggingView: touchedBlock)
-						case .Rod(var views):
-							if views.count < 10 {
-								views.insert(block, atIndex: 1)
-								draggingChain[0] = .Rod(views)
-							} else {
-								draggingChain[0] = .Block(touchedBlock)
-								views.removeAtIndex(find(views, touchedBlock)!)
-								views.insert(block, atIndex: 0)
-								draggingChain.insert(.Rod(views), atIndex: 1)
-								// TODO: handle coalescing
-							}
-						case .Square(var views):
-							draggingChain[0] = .Block(touchedBlock)
-							views.removeAtIndex(find(views, touchedBlock)!)
-							views.insert(block, atIndex: 0)
-							draggingChain.insert(.Square(views), atIndex: 1)
-						}
-					case .Rod(var hitRodViews):
-						switch firstGroup {
-						case .Block:
-							draggingChain.insert(hitGroup, atIndex: 1)
-						case .Rod(var holdingRodViews):
-							if holdingRodViews.count < 10 {
-								draggingChain.insert(hitGroup, atIndex: 1)
-							} else {
-								draggingChain[0] = .Square(Array(holdingRodViews) + hitRodViews)
-							}
-						case .Square(var holdingSquareViews):
-							if (firstGroup.count < 100) {
-								draggingChain[0] = .Square(Array(holdingSquareViews) + hitRodViews)
-							} else {
-								draggingChain.insert(hitGroup, atIndex: 1)
-							}
-						}
-					case .Square(var hitSquareViews):
-						draggingChain.insert(hitGroup, atIndex: 1)
-					}
+					incorporateGrouping(hitGroup, touchedBlock: touchedBlock)
 					println(draggingChain)
 					for grouping in draggingChain {
 						updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: touchedBlock)
