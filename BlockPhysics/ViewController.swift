@@ -279,14 +279,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 						}
 					case .Rod(let secondRodViews):
 						if secondRodViews.count < 10 {
-							let newViews = firstRodViews + secondRodViews
-							newChain[newChain.count-1] = .Rod(Array(newViews[0..<10]))
-							let remainderViews = Array(newViews[10..<newViews.count])
-							if remainderViews.count > 1 {
-								newChain.append(.Rod(remainderViews))
-							} else {
-								newChain.append(.Block(remainderViews[0]))
-							}
+							newChain.append(newGrouping)
 						} else {
 							newChain[newChain.count-1] = .Square(secondRodViews + firstRodViews)
 						}
