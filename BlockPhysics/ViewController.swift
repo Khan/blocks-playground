@@ -234,8 +234,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				holdingRodViews.removeAtIndex(find(holdingRodViews, touchedBlock)!)
 				holdingRodViews.insert(hitBlockView, atIndex: 0)
 				draggingChain.insert(.Rod(holdingRodViews), atIndex: 1)
-			case .Rod, .Square:
+			case .Rod:
 				draggingChain.insert(hitGroup, atIndex: 1)
+			case .Square:
+				var insertionIndex = 1
+				for potentialIndex in 1..<draggingChain.count {
+					if draggingChain[potentialIndex].count < 100 {
+						insertionIndex = potentialIndex + 1
+					} else {
+						break
+					}
+				}
+				draggingChain.insert(hitGroup, atIndex: insertionIndex)
 			}
 		case .Square(var holdingSquareViews):
 			switch hitGroup {
