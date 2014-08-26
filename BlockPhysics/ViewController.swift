@@ -243,8 +243,17 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				holdingSquareViews.removeAtIndex(find(holdingSquareViews, touchedBlock)!)
 				holdingSquareViews.insert(hitBlockView, atIndex: 0)
 				draggingChain.insert(.Square(holdingSquareViews), atIndex: 1)
-			case .Rod:
-				draggingChain.insert(hitGroup, atIndex: 0)
+			case .Rod(var hitRodViews):
+				println("\nOld hit rod views: \(hitRodViews)")
+				holdingSquareViews.removeAtIndex(find(holdingSquareViews, touchedBlock)!)
+				holdingSquareViews.insert(hitRodViews.last!, atIndex: 0)
+				draggingChain[0] = .Square(holdingSquareViews)
+				hitRodViews.removeLast()
+				hitRodViews.insert(touchedBlock, atIndex: 0)
+				draggingChain.insert(.Rod(hitRodViews), atIndex: 0)
+				draggingChain[0] = .Rod(hitRodViews)
+				println("New hit rod views: \(hitRodViews)")
+				println("Touched view: \(touchedBlock)")
 			case .Square:
 				draggingChain.insert(hitGroup, atIndex: 1)
 			}
@@ -295,8 +304,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 							if newSquareViews.count <= 100 {
 								newChain[newChain.count-1] = .Square(newSquareViews)
 							} else {
-								newChain[newChain.count-1] = .Square(Array(newSquareViews[0..<100]))
-								let remainderViews = Array(newSquareViews[100..<newSquareViews.count])
+								newChain[newChain.count-1] = .Square(Array(newSquareViews.reverse()[0..<100]))
+								let remainderViews = Array(newSquareViews.reverse()[100..<newSquareViews.count])
 								if remainderViews.count > 1 {
 									newChain.append(.Rod(remainderViews))
 								} else {
