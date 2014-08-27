@@ -297,8 +297,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 							if newSquareViews.count <= 100 {
 								newChain[newChain.count-1] = .Square(newSquareViews)
 							} else {
-								newChain[newChain.count-1] = .Square(Array(newSquareViews.reverse()[0..<100]))
-								let remainderViews = Array(newSquareViews.reverse()[100..<newSquareViews.count])
+								newChain[newChain.count-1] = .Square(Array(newSquareViews[newSquareViews.count-100..<newSquareViews.count]))
+								let remainderViews = Array(newSquareViews[0..<newSquareViews.count-100])
 								if remainderViews.count > 1 {
 									newChain.append(.Rod(remainderViews))
 								} else {
