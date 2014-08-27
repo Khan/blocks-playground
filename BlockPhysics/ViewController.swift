@@ -18,7 +18,7 @@ class BlockView: UIView {
 	}
 }
 
-enum BlockGrouping: SequenceType, Printable {
+enum BlockGrouping: SequenceType, Printable, Equatable {
 	case Block(BlockView)
 	case Rod([BlockView])
 	case Square([BlockView])
@@ -64,6 +64,10 @@ enum BlockGrouping: SequenceType, Printable {
 	}
 }
 
+func == (left: BlockGrouping, right: BlockGrouping) -> Bool {
+	return Array(left) == Array(right)
+}
+
 enum HorizontalDirection {
 	case Left, Right
 }
@@ -75,6 +79,7 @@ enum VerticalDirection {
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var blockViews: [BlockView] = []
 	var draggingChain: [BlockGrouping] = []
+	var touchedBlock: BlockView? = nil
 
 	var panGesture: UIPanGestureRecognizer! = nil
 	var liftGesture: UILongPressGestureRecognizer! = nil
@@ -100,11 +105,19 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		blockViews = []
 		blockViews.reserveCapacity(numberOfBlocks)
 
+		let pinchGesture = UIPinchGestureRecognizer(target: self, action: "handlePinch:")
+		pinchGesture.delegate = self
+		view.addGestureRecognizer(pinchGesture)
+
+		let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
+		panGesture.delegate = self
+		panGesture.maximumNumberOfTouches = 2
+		view.addGestureRecognizer(panGesture)
+
 		for i in 0..<numberOfBlocks {
 			let y = CGFloat(i / blocksPerRow * 200 + 80)
 			let blockView = addBlockAtPoint(CGPoint(x: 25 + 60 * CGFloat(i % blocksPerRow), y: y))
 		}
-
 
 		let numberOfRods = 12
 		let rodsPerRow = 2
@@ -132,10 +145,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		blockView.layer.borderWidth = 1
 		blockViews.append(blockView)
 		view.addSubview(blockView)
-
-		let panGesture = UIPanGestureRecognizer(target: self, action: "handlePan:")
-		panGesture.delegate = self
-		blockView.addGestureRecognizer(panGesture)
 
 		let liftGesture = UILongPressGestureRecognizer(target: self, action: "handleLift:")
 		liftGesture.minimumPressDuration = 0
@@ -172,12 +181,15 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	}
 
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldReceiveTouch touch: UITouch!) -> Bool {
-		return contains(blockViews, touch.view as BlockView)
+		return touch.view is BlockView
 	}
 
 	func gestureRecognizer(gestureRecognizer: UIGestureRecognizer!, shouldRecognizeSimultaneouslyWithGestureRecognizer otherGestureRecognizer: UIGestureRecognizer!) -> Bool {
-		return (gestureRecognizer.isKindOfClass(UIPanGestureRecognizer.self) && otherGestureRecognizer.isKindOfClass(UILongPressGestureRecognizer.self)) ||
-			(gestureRecognizer.isKindOfClass(UILongPressGestureRecognizer.self) && otherGestureRecognizer.isKindOfClass(UIPanGestureRecognizer.self))
+		if (gestureRecognizer is UILongPressGestureRecognizer || otherGestureRecognizer is UILongPressGestureRecognizer) {
+			return true
+		} else {
+			return false
+		}
 	}
 
 	func updateAnimationConstantsForBlockGrouping(blockGrouping: BlockGrouping, givenDraggingView draggingView: BlockView) {
@@ -223,7 +235,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		return height
 	}
 
-	func incorporateGrouping(hitGroup: BlockGrouping, touchedBlock: BlockView) {
+	func incorporateGrouping(hitGroup: BlockGrouping, givenTouchedBlock aTouchedBlock: BlockView) {
 		let holdingGroup = draggingChain[0]
 		switch holdingGroup {
 		case .Block(let holdingBlockView):
@@ -231,8 +243,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		case .Rod(var holdingRodViews):
 			switch hitGroup {
 			case .Block(let hitBlockView):
-				draggingChain[0] = .Block(touchedBlock)
-				holdingRodViews.removeAtIndex(find(holdingRodViews, touchedBlock)!)
+				draggingChain[0] = .Block(aTouchedBlock)
+				holdingRodViews.removeAtIndex(find(holdingRodViews, aTouchedBlock)!)
 				holdingRodViews.insert(hitBlockView, atIndex: 0)
 				draggingChain.insert(.Rod(holdingRodViews), atIndex: 1)
 			case .Rod, .Square:
@@ -242,16 +254,16 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			switch hitGroup {
 			case .Block(let hitBlockView):
 				// TODO DRY with rod case above
-				draggingChain[0] = .Block(touchedBlock)
-				holdingSquareViews.removeAtIndex(find(holdingSquareViews, touchedBlock)!)
+				draggingChain[0] = .Block(aTouchedBlock)
+				holdingSquareViews.removeAtIndex(find(holdingSquareViews, aTouchedBlock)!)
 				holdingSquareViews.insert(hitBlockView, atIndex: 0)
 				draggingChain.insert(.Square(holdingSquareViews), atIndex: 1)
 			case .Rod(var hitRodViews):
-				holdingSquareViews.removeAtIndex(find(holdingSquareViews, touchedBlock)!)
+				holdingSquareViews.removeAtIndex(find(holdingSquareViews, aTouchedBlock)!)
 				holdingSquareViews.insert(hitRodViews.last!, atIndex: 0)
 				draggingChain[0] = .Square(holdingSquareViews)
 				hitRodViews.removeLast()
-				hitRodViews.insert(touchedBlock, atIndex: 0)
+				hitRodViews.insert(aTouchedBlock, atIndex: 0)
 				draggingChain.insert(.Rod(hitRodViews), atIndex: 0)
 				draggingChain[0] = .Rod(hitRodViews)
 			case .Square:
@@ -323,22 +335,42 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		}.reverse()
 	}
 
+	func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer!) -> Bool {
+		if gestureRecognizer is UIPinchGestureRecognizer {
+			// The pinch gesture should only begin if the two hit blocks are in the same grouping.
+			let firstTouchedBlockView = view.hitTest(gestureRecognizer.locationOfTouch(0, inView: view), withEvent: nil) as BlockView
+			let secondTouchedBlockView = view.hitTest(gestureRecognizer.locationOfTouch(1, inView: view), withEvent: nil) as BlockView
+			let firstTouchedGrouping = blockViewsToBlockGroupings[firstTouchedBlockView]!
+			let secondTouchedGrouping = blockViewsToBlockGroupings[secondTouchedBlockView]!
+			if firstTouchedGrouping == secondTouchedGrouping {
+				return true
+			} else {
+				return false
+			}
+		} else {
+			return true
+		}
+	}
+
+	func handlePinch(gesture: UIPinchGestureRecognizer) {
+
+	}
+
 	func handlePan(gesture: UIPanGestureRecognizer) {
 		let gestureLocation = gesture.locationInView(view)
-		let touchedBlock = gesture.view as BlockView
-		let blockIndex = find(blockViews, touchedBlock)!
 		switch gesture.state {
 		case .Began:
-			draggingChain = [blockViewsToBlockGroupings[touchedBlock]!]
-			touchedBlock.pop_removeAnimationForKey("position")
+			touchedBlock = view.hitTest(gesture.locationInView(view), withEvent: nil) as? BlockView
+			draggingChain = [blockViewsToBlockGroupings[touchedBlock!]!]
+			touchedBlock!.pop_removeAnimationForKey("position")
 
 			horizontalDirection = gesture.velocityInView(view).x > 0 ? .Right : .Left
 			verticalDirection = gesture.velocityInView(view).y > 0 ? .Down : .Up
 		case .Changed:
 			let translation = gesture.translationInView(view)
 			gesture.setTranslation(CGPoint(), inView: view)
-			touchedBlock.center.x += translation.x
-			touchedBlock.center.y += translation.y
+			touchedBlock!.center.x += translation.x
+			touchedBlock!.center.y += translation.y
 
 			let gestureVelocity = gesture.velocityInView(view)
 			let velocityThreshold: CGFloat = spec["velocityThreshold"]
@@ -357,9 +389,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			for block in blockViews {
 				if block.pointInside(gesture.locationInView(block), withEvent: nil) && !contains(draggingChain, {$0.containsBlockView(block)}) {
 					let hitGroup = blockViewsToBlockGroupings[block]!
-					incorporateGrouping(hitGroup, touchedBlock: touchedBlock)
+					incorporateGrouping(hitGroup, givenTouchedBlock: touchedBlock!)
 					for grouping in draggingChain {
-						updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: touchedBlock)
+						updateAnimationConstantsForBlockGrouping(grouping, givenDraggingView: touchedBlock!)
 					}
 
 					for hitBlock in hitGroup {
@@ -371,19 +403,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				}
 			}
 
-			var y = touchedBlock.center.y
+			var y = touchedBlock!.center.y
 			for groupingIndex in 0..<draggingChain.count {
 				let grouping = draggingChain[groupingIndex]
-				let anchorBlockView = groupingIndex == 0 ? touchedBlock : grouping.firstBlock()
-				let groupingHeight = layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: touchedBlock.center.x, y: y), anchorBlockView: anchorBlockView)
+				let anchorBlockView = groupingIndex == 0 ? touchedBlock! : grouping.firstBlock()
+				let groupingHeight = layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: touchedBlock!.center.x, y: y), anchorBlockView: anchorBlockView)
 				let verticalMargin: CGFloat = 20.0
 				y += (verticalMargin + groupingHeight) * (verticalDirection == .Down ? -1 : 1)
 			}
 		case .Ended:
-			let draggingBlockAnimation = positionAnimationForBlockView(touchedBlock)
+			let blockIndex = find(blockViews, touchedBlock!)!
+			let draggingBlockAnimation = positionAnimationForBlockView(touchedBlock!)
 			draggingBlockAnimation.toValue = NSValue(CGPoint: blockViews[blockIndex].center)
 			draggingBlockAnimation.fromValue = draggingBlockAnimation.toValue
-			touchedBlock.pop_addAnimation(draggingBlockAnimation, forKey: "position")
+			touchedBlock!.pop_addAnimation(draggingBlockAnimation, forKey: "position")
 
 			var groupingsToCommit: [BlockGrouping] = []
 			for grouping in draggingChain {
@@ -414,7 +447,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 			for groupingIndex in 0..<groupingsToCommit.count {
 				let grouping = groupingsToCommit[groupingIndex]
-				var x = touchedBlock.center.x
+				var x = touchedBlock!.center.x
 				for blockView in grouping {
 					blockViewsToBlockGroupings[blockView] = grouping
 
@@ -423,11 +456,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 					}, completion: nil)
 				}
 
-				let anchorBlockView = groupingIndex == 0 ? touchedBlock : grouping.firstBlock()
+				let anchorBlockView = groupingIndex == 0 ? touchedBlock! : grouping.firstBlock()
 				let anchorBlockAnimation = blockViewsToAnimations[anchorBlockView]!
 				let anchorAnimationToPoint = anchorBlockAnimation.toValue.CGPointValue()
 				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView)
 			}
+
+			touchedBlock = nil
 		default:
 			break
 		}
