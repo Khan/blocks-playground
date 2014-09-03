@@ -374,25 +374,48 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			var rubberbandedSeparation = maximumSeparation * (1.0 - (1.0 / ((xSeparation * 0.55 / maximumSeparation) + 1.0)))
 			layoutBlockGrouping(pinchingGroup, givenAnchorPoint: gesture.locationOfTouch(0, inView: view), anchorBlockView: pinchingBlocks!.0, xSeparation: rubberbandedSeparation, ySeparation: 0)
 */
-		case .Ended where gesture.scale > 2:
+		case .Ended where gesture.scale > 1.5:
 			let pinchingGroup = blockViewsToBlockGroupings[pinchingBlocks!.0]!
 			switch pinchingGroup {
 			case .Block: break
 			case .Rod(let pinchedBlockViews):
-				for blockView in pinchingGroup {
-					let newGrouping: BlockGrouping = .Block(blockView)
-					blockViewsToBlockGroupings[blockView] = newGrouping
+				// TODO: some kind of layout invalidation mechanism. this is nuts.
+				dispatch_async(dispatch_get_main_queue()) {
+					for blockViewIndex in 0..<pinchingGroup.count {
+						let blockView = pinchedBlockViews[blockViewIndex]
+						let newGrouping: BlockGrouping = .Block(blockView)
+						self.blockViewsToBlockGroupings[blockView] = newGrouping
 
-					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
-						blockView.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
-					}, completion: nil)
+						UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
+							blockView.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
+							}, completion: nil)
 
-					let anchorBlockView = newGrouping.firstBlock()
-					let anchorBlockAnimation = blockViewsToAnimations[anchorBlockView]!
-					let anchorAnimationToPoint = anchorBlockAnimation.toValue.CGPointValue()
-					layoutBlockGrouping(newGrouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView, xSeparation: 0, ySeparation: 0)
+						let anchorBlockView = newGrouping.firstBlock()
+						let anchorBlockAnimation = self.blockViewsToAnimations[anchorBlockView]!
+						var anchorAnimationToPoint = anchorBlockAnimation.toValue.CGPointValue()
+						anchorAnimationToPoint.x -= CGFloat(5 - blockViewIndex) * self.blockSize * 1.5
+						self.layoutBlockGrouping(newGrouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView, xSeparation: 0, ySeparation: 0)
+					}
 				}
-			case .Square(let pinchedSquareViews): abort()
+			case .Square(let pinchedSquareViews):
+				// TODO DRY with above
+				dispatch_async(dispatch_get_main_queue()) {
+					for blockViewIndex in stride(from: 0, to: pinchedSquareViews.count, by: 10) {
+						let newGrouping: BlockGrouping = .Rod(Array(pinchedSquareViews[blockViewIndex..<blockViewIndex+10]))
+						for blockView in newGrouping {
+							self.blockViewsToBlockGroupings[blockView] = newGrouping
+							UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
+								blockView.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
+							}, completion: nil)
+						}
+
+						let anchorBlockView = newGrouping.firstBlock()
+						let anchorBlockAnimation = self.blockViewsToAnimations[anchorBlockView]!
+						var anchorAnimationToPoint = anchorBlockAnimation.toValue.CGPointValue()
+						anchorAnimationToPoint.y -= CGFloat(5 - blockViewIndex/10) * self.blockSize * 1.5
+						self.layoutBlockGrouping(newGrouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView, xSeparation: 0, ySeparation: 0)
+					}
+				}
 			}
 		case .Ended: break;
 		case .Cancelled: break; // TODO
