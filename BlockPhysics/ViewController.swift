@@ -79,10 +79,11 @@ enum VerticalDirection {
 class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var blockViews: [BlockView] = []
 	var draggingChain: [BlockGrouping] = []
-	var touchedBlock: BlockView? = nil
+	var touchedBlock: BlockView?
+	var pinchingBlocks: (BlockView, BlockView)?
 
-	var panGesture: UIPanGestureRecognizer! = nil
-	var liftGesture: UILongPressGestureRecognizer! = nil
+	var panGesture: UIPanGestureRecognizer!
+	var liftGesture: UILongPressGestureRecognizer!
 
 	var blockSize: CGFloat = 15.0
 
@@ -169,7 +170,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		for blockView in blockViews {
 			blockViewsToBlockGroupings[blockView] = grouping
 		}
-		layoutBlockGrouping(grouping, givenAnchorPoint: point, anchorBlockView: grouping.firstBlock())
+		layoutBlockGrouping(grouping, givenAnchorPoint: point, anchorBlockView: grouping.firstBlock(), xSeparation: 0, ySeparation: 0)
 		for blockView in blockViews {
 			blockView.center = blockViewsToAnimations[blockView]!.toValue.CGPointValue()
 		}
@@ -208,9 +209,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		}
 	}
 
-	func layoutBlockGrouping(blockGrouping: BlockGrouping, givenAnchorPoint anchorPoint: CGPoint, anchorBlockView: BlockView) -> CGFloat {
-		let xSeparation = max(CGFloat(18.0 - blockGrouping.count * 2.0), -1)
-		let ySeparation = max(CGFloat(18.0 - blockGrouping.count / 5.0), -1)
+	func layoutBlockGrouping(blockGrouping: BlockGrouping, givenAnchorPoint anchorPoint: CGPoint, anchorBlockView: BlockView, xSeparation: CGFloat, ySeparation: CGFloat) -> CGFloat {
+//		let xSeparation = max(CGFloat(18.0 - blockGrouping.count * 2.0), -1)
+//		let ySeparation = max(CGFloat(18.0 - blockGrouping.count / 5.0), -1)
 		let blocks = Array(blockGrouping)
 		let anchorBlockIndex = find(blocks, anchorBlockView)!
 
@@ -336,7 +337,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	}
 
 	func gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer!) -> Bool {
-		if gestureRecognizer is UIPinchGestureRecognizer {
+		switch gestureRecognizer {
+		case is UIPinchGestureRecognizer, is UIPanGestureRecognizer where gestureRecognizer.numberOfTouches() > 2:
 			// The pinch gesture should only begin if the two hit blocks are in the same grouping.
 			let firstTouchedBlockView = view.hitTest(gestureRecognizer.locationOfTouch(0, inView: view), withEvent: nil) as BlockView
 			let secondTouchedBlockView = view.hitTest(gestureRecognizer.locationOfTouch(1, inView: view), withEvent: nil) as BlockView
@@ -347,13 +349,55 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			} else {
 				return false
 			}
-		} else {
-			return true
+		default: return true
 		}
 	}
 
 	func handlePinch(gesture: UIPinchGestureRecognizer) {
+		switch gesture.state {
+		case .Began:
+			let firstBlock = view.hitTest(gesture.locationOfTouch(0, inView: view), withEvent: nil) as BlockView // TODO: more robust; this will fail in edge cases
+			let secondBlock = view.hitTest(gesture.locationOfTouch(1, inView: view), withEvent: nil) as BlockView // TODO: more robust; this will fail in edge cases
+			pinchingBlocks = (firstBlock, secondBlock)
+		case .Changed:
+			break
+			/*
+			let pinchingGroup = blockViewsToBlockGroupings[pinchingBlocks!.0]!
+			let blocksInGroup = Array(pinchingGroup)
+			let indexDistance = abs(find(blocksInGroup, pinchingBlocks!.0)! - find(blocksInGroup, pinchingBlocks!.1)!)
+			let restingDistance = pinchingBlocks!.0.bounds.size.width * CGFloat(indexDistance)
+			let currentDistance = abs(gesture.locationOfTouch(0, inView: view).x - gesture.locationOfTouch(1, inView: view).x)
+			let xSeparation = (currentDistance - restingDistance) / CGFloat(indexDistance)
 
+			let maximumSeparation = blockSize * 2.0
+			let minimumSeparation: CGFloat = 0.0
+			var rubberbandedSeparation = maximumSeparation * (1.0 - (1.0 / ((xSeparation * 0.55 / maximumSeparation) + 1.0)))
+			layoutBlockGrouping(pinchingGroup, givenAnchorPoint: gesture.locationOfTouch(0, inView: view), anchorBlockView: pinchingBlocks!.0, xSeparation: rubberbandedSeparation, ySeparation: 0)
+*/
+		case .Ended where gesture.scale > 2:
+			let pinchingGroup = blockViewsToBlockGroupings[pinchingBlocks!.0]!
+			switch pinchingGroup {
+			case .Block: break
+			case .Rod(let pinchedBlockViews):
+				for blockView in pinchingGroup {
+					let newGrouping: BlockGrouping = .Block(blockView)
+					blockViewsToBlockGroupings[blockView] = newGrouping
+
+					UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
+						blockView.bounds = CGRectMake(0, 0, self.blockSize, self.blockSize)
+					}, completion: nil)
+
+					let anchorBlockView = newGrouping.firstBlock()
+					let anchorBlockAnimation = blockViewsToAnimations[anchorBlockView]!
+					let anchorAnimationToPoint = anchorBlockAnimation.toValue.CGPointValue()
+					layoutBlockGrouping(newGrouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView, xSeparation: 0, ySeparation: 0)
+				}
+			case .Square(let pinchedSquareViews): abort()
+			}
+		case .Ended: break;
+		case .Cancelled: break; // TODO
+		default: abort()
+		}
 	}
 
 	func handlePan(gesture: UIPanGestureRecognizer) {
@@ -407,7 +451,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			for groupingIndex in 0..<draggingChain.count {
 				let grouping = draggingChain[groupingIndex]
 				let anchorBlockView = groupingIndex == 0 ? touchedBlock! : grouping.firstBlock()
-				let groupingHeight = layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: touchedBlock!.center.x, y: y), anchorBlockView: anchorBlockView)
+				let groupingHeight = layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: touchedBlock!.center.x, y: y), anchorBlockView: anchorBlockView, xSeparation: 0, ySeparation: 0)
 				let verticalMargin: CGFloat = 20.0
 				y += (verticalMargin + groupingHeight) * (verticalDirection == .Down ? -1 : 1)
 			}
@@ -459,12 +503,12 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				let anchorBlockView = groupingIndex == 0 ? touchedBlock! : grouping.firstBlock()
 				let anchorBlockAnimation = blockViewsToAnimations[anchorBlockView]!
 				let anchorAnimationToPoint = anchorBlockAnimation.toValue.CGPointValue()
-				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView)
+				layoutBlockGrouping(grouping, givenAnchorPoint: CGPoint(x: anchorAnimationToPoint.x, y: anchorAnimationToPoint.y), anchorBlockView: anchorBlockView, xSeparation: 0, ySeparation: 0)
 			}
 
 			touchedBlock = nil
-		default:
-			break
+		case .Cancelled: break; // TODO
+		default: abort()
 		}
 	}
 
@@ -482,7 +526,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				}, completion: nil)
 			}
 			updateAnimationConstantsForBlockGrouping(hitGrouping, givenDraggingView: hitBlock)
-			layoutBlockGrouping(hitGrouping, givenAnchorPoint: gesture.locationInView(view), anchorBlockView: hitBlock)
+			layoutBlockGrouping(hitGrouping, givenAnchorPoint: gesture.locationInView(view), anchorBlockView: hitBlock, xSeparation: 0, ySeparation: 0)
 			hitBlock.layer.zPosition = 100
 		case .Ended:
 			for blockView in hitGrouping {
@@ -491,7 +535,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 				}, completion: nil)
 			}
 			hitBlock.layer.zPosition = 0
-			layoutBlockGrouping(hitGrouping, givenAnchorPoint: gesture.locationInView(view), anchorBlockView: hitBlock)
+			layoutBlockGrouping(hitGrouping, givenAnchorPoint: gesture.locationInView(view), anchorBlockView: hitBlock, xSeparation: 0, ySeparation: 0)
 		default:
 			break
 		}
