@@ -210,8 +210,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	}
 
 	func layoutBlockGrouping(blockGrouping: BlockGrouping, givenAnchorPoint anchorPoint: CGPoint, anchorBlockView: BlockView, xSeparation: CGFloat, ySeparation: CGFloat) -> CGFloat {
-//		let xSeparation = max(CGFloat(18.0 - blockGrouping.count * 2.0), -1)
-//		let ySeparation = max(CGFloat(18.0 - blockGrouping.count / 5.0), -1)
+		let xSeparation = max(CGFloat(18.0 - blockGrouping.count * 2.0), -1)
+		let ySeparation = max(CGFloat(18.0 - blockGrouping.count / 5.0), -1)
 		let blocks = Array(blockGrouping)
 		let anchorBlockIndex = find(blocks, anchorBlockView)!
 
