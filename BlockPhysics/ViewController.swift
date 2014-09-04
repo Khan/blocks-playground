@@ -76,7 +76,7 @@ enum VerticalDirection {
 	case Up, Down
 }
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertViewDelegate {
 	var blockViews: [BlockView] = []
 	var draggingChain: [BlockGrouping] = []
 	var touchedBlock: BlockView?
@@ -92,7 +92,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 	var blockViewsToBlockGroupings: [BlockView: BlockGrouping] = [:]
 
 	var horizontalDirection: HorizontalDirection = .Left
-	var verticalDirection: VerticalDirection = .Down
+	var verticalDirection: VerticalDirection = .Up
 
 	override func loadView() {
 		super.loadView()
@@ -101,10 +101,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 
 		view.backgroundColor = UIColor.whiteColor()
 
-		let numberOfBlocks = 40
-		let blocksPerRow = 12
 		blockViews = []
-		blockViews.reserveCapacity(numberOfBlocks)
+		addBlocks(138, atPoint: CGPoint(x: 50, y: 70))
 
 		let pinchGesture = UIPinchGestureRecognizer(target: self, action: "handlePinch:")
 		pinchGesture.delegate = self
@@ -115,17 +113,10 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		panGesture.maximumNumberOfTouches = 2
 		view.addGestureRecognizer(panGesture)
 
-		for i in 0..<numberOfBlocks {
-			let y = CGFloat(i / blocksPerRow * 200 + 80)
-			let blockView = addBlockAtPoint(CGPoint(x: 25 + 60 * CGFloat(i % blocksPerRow), y: y))
-		}
-
-		let numberOfRods = 12
-		let rodsPerRow = 2
-		for i in 0..<numberOfRods {
-			let y = CGFloat(i / rodsPerRow * 50 + 550)
-			addRowAtPoint(CGPoint(x: 350 + 200 * CGFloat(i % rodsPerRow), y: y))
-		}
+		let addButton = UIButton.buttonWithType(UIButtonType.ContactAdd) as UIButton
+		addButton.center = CGPoint(x: 20, y: 20)
+		addButton.addTarget(self, action: "addButtonPressed:", forControlEvents: .TouchUpInside)
+		view.addSubview(addButton)
 
 		spec.withKey("blockSize", owner: self) { $0.blockSize = $1 }
 	}
@@ -177,6 +168,59 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		return blockViews
 	}
 
+	// TODO DRY with addRowAtPoint
+	func addSquareAtPoint(point: CGPoint) -> [BlockView] {
+		let blockViews: [BlockView] = (0..<100).map { _ in self.addBlockAtPoint(point) }
+		let grouping = BlockGrouping.Square(blockViews)
+		for blockView in blockViews {
+			blockViewsToBlockGroupings[blockView] = grouping
+		}
+		layoutBlockGrouping(grouping, givenAnchorPoint: point, anchorBlockView: grouping.firstBlock(), xSeparation: 0, ySeparation: 0)
+		for blockView in blockViews {
+			blockView.center = blockViewsToAnimations[blockView]!.toValue.CGPointValue()
+		}
+		return blockViews
+	}
+
+	func addBlocks(numberOfBlocks: Int, atPoint: CGPoint) {
+		let numberOfSquares = numberOfBlocks / 100
+		let numberOfRods = (numberOfBlocks - numberOfSquares * 100) / 10
+		let numberOfBlocks = numberOfBlocks - numberOfSquares * 100 - numberOfRods * 10
+		var y = atPoint.y
+
+		if (numberOfSquares > 0) {
+			let squaresPerRow = 3
+			for i in 0..<numberOfSquares {
+				if i > 0 && i % squaresPerRow == 0 {
+					y += blockSize * 10 + 75
+				}
+				addSquareAtPoint(CGPoint(x: atPoint.x + (blockSize * 10 + 75) * CGFloat(i % squaresPerRow), y: y))
+			}
+
+			y += blockSize * 10 + 150
+		}
+
+		if (numberOfRods > 0) {
+			let rodsPerRow = 3
+			for i in 0..<numberOfRods {
+				if i > 0 && i % rodsPerRow == 0 {
+					y += 75
+				}
+				addRowAtPoint(CGPoint(x: atPoint.x + (blockSize * 10 + 75) * CGFloat(i % rodsPerRow), y: y))
+			}
+
+			y += 150
+		}
+
+		let blocksPerRow = 12
+		for i in 0..<numberOfBlocks {
+			if i > 0 && i % blocksPerRow == 0 {
+				y += 150
+			}
+			let blockView = addBlockAtPoint(CGPoint(x: atPoint.x + 60 * CGFloat(i % blocksPerRow), y: y))
+		}
+	}
+
 	func positionAnimationForBlockView(blockView: BlockView) -> POPSpringAnimation {
 		return blockViewsToAnimations[blockView]!
 	}
@@ -190,6 +234,20 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 			return true
 		} else {
 			return false
+		}
+	}
+
+	func addButtonPressed(sender: UIButton) {
+		let alertView = UIAlertView(title: "How many blocks?", message: "", delegate: self, cancelButtonTitle: "Cancel", otherButtonTitles: "Add")
+		alertView.alertViewStyle = .PlainTextInput
+		alertView.show()
+	}
+
+	func alertView(alertView: UIAlertView, didDismissWithButtonIndex buttonIndex: Int) {
+		if buttonIndex != alertView.cancelButtonIndex {
+			if let blockCount = alertView.textFieldAtIndex(0)!.text.toInt() {
+				addBlocks(blockCount, atPoint: CGPoint(x: 50, y: 70))
+			}
 		}
 	}
 
@@ -562,5 +620,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate {
 		default:
 			break
 		}
+	}
+
+	override func prefersStatusBarHidden() -> Bool {
+		return true
 	}
 }
