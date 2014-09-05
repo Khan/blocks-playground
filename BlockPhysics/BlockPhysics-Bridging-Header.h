@@ -4,3 +4,4 @@
 
 #import <POP/Pop.h>
 #import "KFTunableSpec.h"
+#import "KAScratchpadViewController.h"

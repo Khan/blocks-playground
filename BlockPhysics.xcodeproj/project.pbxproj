@@ -8,6 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		20E0C6FDB5C640E0933E0542 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A87DD38CD9494B2F9178F548 /* libPods.a */; };
+		EBAE83FC19BA54E50074189C /* KAScratchpadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE83FB19BA54E50074189C /* KAScratchpadViewController.m */; };
+		EBAE841119BA54F10074189C /* KAScratchpadBrush.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE83FE19BA54F10074189C /* KAScratchpadBrush.m */; };
+		EBAE841219BA54F10074189C /* KAScratchpadCanvasPath.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE840019BA54F10074189C /* KAScratchpadCanvasPath.m */; };
+		EBAE841319BA54F10074189C /* KAScratchpadCanvasPathPlotter.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE840219BA54F10074189C /* KAScratchpadCanvasPathPlotter.m */; };
+		EBAE841419BA54F10074189C /* KAScratchpadCanvasStroke.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE840419BA54F10074189C /* KAScratchpadCanvasStroke.m */; };
+		EBAE841519BA54F10074189C /* KAScratchpadCanvasTileCache.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE840619BA54F10074189C /* KAScratchpadCanvasTileCache.m */; };
+		EBAE841619BA54F10074189C /* KAScratchpadCanvasView.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE840819BA54F10074189C /* KAScratchpadCanvasView.m */; };
+		EBAE841819BA54F10074189C /* KAScratchpadDrawing.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE840C19BA54F10074189C /* KAScratchpadDrawing.m */; };
+		EBAE841919BA54F10074189C /* KAScratchpadGestureRecognizer.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE840E19BA54F10074189C /* KAScratchpadGestureRecognizer.m */; };
+		EBAE841A19BA54F10074189C /* KAScratchpadInker.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE841019BA54F10074189C /* KAScratchpadInker.m */; };
+		EBAE842019BA55CD0074189C /* KAGeometryFunctions.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE841F19BA55CD0074189C /* KAGeometryFunctions.m */; };
+		EBAE842419BA55EC0074189C /* NSArray+KHAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = EBAE842319BA55EC0074189C /* NSArray+KHAExtensions.m */; };
 		EBC1D8C3199EB96F00244A6C /* KFTunableSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */; };
 		EBC1D8C5199EB99000244A6C /* Blocks.json in Resources */ = {isa = PBXBuildFile; fileRef = EBC1D8C4199EB99000244A6C /* Blocks.json */; };
 		EBCD7BA019A6F83A0042BB5D /* TunableSpec.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBCD7B9F19A6F83A0042BB5D /* TunableSpec.swift */; };
@@ -31,6 +43,32 @@
 /* Begin PBXFileReference section */
 		944340DCD5204E17BFAF0FC5 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		A87DD38CD9494B2F9178F548 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		EBAE83FA19BA54E50074189C /* KAScratchpadViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadViewController.h; sourceTree = "<group>"; };
+		EBAE83FB19BA54E50074189C /* KAScratchpadViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadViewController.m; sourceTree = "<group>"; };
+		EBAE83FD19BA54F10074189C /* KAScratchpadBrush.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadBrush.h; sourceTree = "<group>"; };
+		EBAE83FE19BA54F10074189C /* KAScratchpadBrush.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadBrush.m; sourceTree = "<group>"; };
+		EBAE83FF19BA54F10074189C /* KAScratchpadCanvasPath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadCanvasPath.h; sourceTree = "<group>"; };
+		EBAE840019BA54F10074189C /* KAScratchpadCanvasPath.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadCanvasPath.m; sourceTree = "<group>"; };
+		EBAE840119BA54F10074189C /* KAScratchpadCanvasPathPlotter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadCanvasPathPlotter.h; sourceTree = "<group>"; };
+		EBAE840219BA54F10074189C /* KAScratchpadCanvasPathPlotter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadCanvasPathPlotter.m; sourceTree = "<group>"; };
+		EBAE840319BA54F10074189C /* KAScratchpadCanvasStroke.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadCanvasStroke.h; sourceTree = "<group>"; };
+		EBAE840419BA54F10074189C /* KAScratchpadCanvasStroke.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadCanvasStroke.m; sourceTree = "<group>"; };
+		EBAE840519BA54F10074189C /* KAScratchpadCanvasTileCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadCanvasTileCache.h; sourceTree = "<group>"; };
+		EBAE840619BA54F10074189C /* KAScratchpadCanvasTileCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadCanvasTileCache.m; sourceTree = "<group>"; };
+		EBAE840719BA54F10074189C /* KAScratchpadCanvasView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadCanvasView.h; sourceTree = "<group>"; };
+		EBAE840819BA54F10074189C /* KAScratchpadCanvasView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadCanvasView.m; sourceTree = "<group>"; };
+		EBAE840B19BA54F10074189C /* KAScratchpadDrawing.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadDrawing.h; sourceTree = "<group>"; };
+		EBAE840C19BA54F10074189C /* KAScratchpadDrawing.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadDrawing.m; sourceTree = "<group>"; };
+		EBAE840D19BA54F10074189C /* KAScratchpadGestureRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadGestureRecognizer.h; sourceTree = "<group>"; };
+		EBAE840E19BA54F10074189C /* KAScratchpadGestureRecognizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadGestureRecognizer.m; sourceTree = "<group>"; };
+		EBAE840F19BA54F10074189C /* KAScratchpadInker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAScratchpadInker.h; sourceTree = "<group>"; };
+		EBAE841019BA54F10074189C /* KAScratchpadInker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAScratchpadInker.m; sourceTree = "<group>"; };
+		EBAE841B19BA55070074189C /* KAHashingUtilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = KAHashingUtilities.h; sourceTree = "<group>"; };
+		EBAE841D19BA55910074189C /* Khan-Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Khan-Prefix.pch"; sourceTree = "<group>"; };
+		EBAE841E19BA55CD0074189C /* KAGeometryFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KAGeometryFunctions.h; sourceTree = "<group>"; };
+		EBAE841F19BA55CD0074189C /* KAGeometryFunctions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KAGeometryFunctions.m; sourceTree = "<group>"; };
+		EBAE842219BA55EC0074189C /* NSArray+KHAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+KHAExtensions.h"; sourceTree = "<group>"; };
+		EBAE842319BA55EC0074189C /* NSArray+KHAExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+KHAExtensions.m"; sourceTree = "<group>"; };
 		EBC1D8C1199EB96F00244A6C /* KFTunableSpec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KFTunableSpec.h; sourceTree = "<group>"; };
 		EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KFTunableSpec.m; sourceTree = "<group>"; };
 		EBC1D8C4199EB99000244A6C /* Blocks.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Blocks.json; sourceTree = "<group>"; };
@@ -74,6 +112,38 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		EBAE83F919BA53190074189C /* Scratchpad */ = {
+			isa = PBXGroup;
+			children = (
+				EBAE841B19BA55070074189C /* KAHashingUtilities.h */,
+				EBAE83FA19BA54E50074189C /* KAScratchpadViewController.h */,
+				EBAE83FB19BA54E50074189C /* KAScratchpadViewController.m */,
+				EBAE83FD19BA54F10074189C /* KAScratchpadBrush.h */,
+				EBAE83FE19BA54F10074189C /* KAScratchpadBrush.m */,
+				EBAE83FF19BA54F10074189C /* KAScratchpadCanvasPath.h */,
+				EBAE840019BA54F10074189C /* KAScratchpadCanvasPath.m */,
+				EBAE840119BA54F10074189C /* KAScratchpadCanvasPathPlotter.h */,
+				EBAE840219BA54F10074189C /* KAScratchpadCanvasPathPlotter.m */,
+				EBAE840319BA54F10074189C /* KAScratchpadCanvasStroke.h */,
+				EBAE840419BA54F10074189C /* KAScratchpadCanvasStroke.m */,
+				EBAE840519BA54F10074189C /* KAScratchpadCanvasTileCache.h */,
+				EBAE840619BA54F10074189C /* KAScratchpadCanvasTileCache.m */,
+				EBAE840719BA54F10074189C /* KAScratchpadCanvasView.h */,
+				EBAE840819BA54F10074189C /* KAScratchpadCanvasView.m */,
+				EBAE840B19BA54F10074189C /* KAScratchpadDrawing.h */,
+				EBAE840C19BA54F10074189C /* KAScratchpadDrawing.m */,
+				EBAE840D19BA54F10074189C /* KAScratchpadGestureRecognizer.h */,
+				EBAE840E19BA54F10074189C /* KAScratchpadGestureRecognizer.m */,
+				EBAE840F19BA54F10074189C /* KAScratchpadInker.h */,
+				EBAE841019BA54F10074189C /* KAScratchpadInker.m */,
+				EBAE841E19BA55CD0074189C /* KAGeometryFunctions.h */,
+				EBAE841F19BA55CD0074189C /* KAGeometryFunctions.m */,
+				EBAE842219BA55EC0074189C /* NSArray+KHAExtensions.h */,
+				EBAE842319BA55EC0074189C /* NSArray+KHAExtensions.m */,
+			);
+			name = Scratchpad;
+			sourceTree = "<group>";
+		};
 		EBDA77A1199AEDBF00860635 = {
 			isa = PBXGroup;
 			children = (
@@ -106,6 +176,7 @@
 				EBC1D8C1199EB96F00244A6C /* KFTunableSpec.h */,
 				EBC1D8C2199EB96F00244A6C /* KFTunableSpec.m */,
 				EBCD7B9F19A6F83A0042BB5D /* TunableSpec.swift */,
+				EBAE83F919BA53190074189C /* Scratchpad */,
 			);
 			path = BlockPhysics;
 			sourceTree = "<group>";
@@ -113,6 +184,7 @@
 		EBDA77AD199AEDBF00860635 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				EBAE841D19BA55910074189C /* Khan-Prefix.pch */,
 				EBDA77AE199AEDBF00860635 /* Info.plist */,
 				EBC1D8C4199EB99000244A6C /* Blocks.json */,
 			);
@@ -272,9 +344,21 @@
 			buildActionMask = 2147483647;
 			files = (
 				EBDA77B2199AEDBF00860635 /* ViewController.swift in Sources */,
+				EBAE842019BA55CD0074189C /* KAGeometryFunctions.m in Sources */,
+				EBAE841419BA54F10074189C /* KAScratchpadCanvasStroke.m in Sources */,
+				EBAE841219BA54F10074189C /* KAScratchpadCanvasPath.m in Sources */,
+				EBAE841519BA54F10074189C /* KAScratchpadCanvasTileCache.m in Sources */,
+				EBAE83FC19BA54E50074189C /* KAScratchpadViewController.m in Sources */,
+				EBAE841919BA54F10074189C /* KAScratchpadGestureRecognizer.m in Sources */,
 				EBC1D8C3199EB96F00244A6C /* KFTunableSpec.m in Sources */,
+				EBAE841A19BA54F10074189C /* KAScratchpadInker.m in Sources */,
+				EBAE841619BA54F10074189C /* KAScratchpadCanvasView.m in Sources */,
 				EBCD7BA019A6F83A0042BB5D /* TunableSpec.swift in Sources */,
 				EBDA77B0199AEDBF00860635 /* AppDelegate.swift in Sources */,
+				EBAE842419BA55EC0074189C /* NSArray+KHAExtensions.m in Sources */,
+				EBAE841319BA54F10074189C /* KAScratchpadCanvasPathPlotter.m in Sources */,
+				EBAE841119BA54F10074189C /* KAScratchpadBrush.m in Sources */,
+				EBAE841819BA54F10074189C /* KAScratchpadDrawing.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -394,6 +478,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "BlockPhysics/Khan-Prefix.pch";
 				INFOPLIST_FILE = BlockPhysics/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -410,6 +496,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
 				CLANG_ENABLE_MODULES = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "BlockPhysics/Khan-Prefix.pch";
 				INFOPLIST_FILE = BlockPhysics/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

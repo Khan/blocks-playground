@@ -98,6 +98,9 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		super.loadView()
 
 		self.view.addGestureRecognizer(spec.twoFingerTripleTapGestureRecognizer())
+		let scratchpadController = KAScratchpadViewController()
+		self.addChildViewController(scratchpadController)
+		self.view.addSubview(scratchpadController.view)
 
 		view.backgroundColor = UIColor.whiteColor()
 
