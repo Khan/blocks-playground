@@ -105,7 +105,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		view.backgroundColor = UIColor.whiteColor()
 
 		blockViews = []
-		addBlocks(138, atPoint: CGPoint(x: 50, y: 70))
 
 		let pinchGesture = UIPinchGestureRecognizer(target: self, action: "handlePinch:")
 		pinchGesture.delegate = self
@@ -488,7 +487,6 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		let gestureLocation = gesture.locationInView(view)
 		switch gesture.state {
 		case .Began:
-			touchedBlock = view.hitTest(gesture.locationInView(view), withEvent: nil) as? BlockView
 			draggingChain = [blockViewsToBlockGroupings[touchedBlock!]!]
 			touchedBlock!.pop_removeAnimationForKey("position")
 
@@ -601,6 +599,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		let hitGrouping = blockViewsToBlockGroupings[hitBlock]!
 		switch gesture.state {
 		case .Began:
+			touchedBlock = hitBlock
 			for blockView in hitGrouping {
 				UIView.animateWithDuration(0.25, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: UIViewAnimationOptions.BeginFromCurrentState | UIViewAnimationOptions.AllowUserInteraction, animations: {
 					let leadingMagnificationScale: CGFloat = spec["leadingMagnificationScale"]
