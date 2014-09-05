@@ -76,7 +76,7 @@ enum VerticalDirection {
 	case Up, Down
 }
 
-class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertViewDelegate {
+class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertViewDelegate, UIActionSheetDelegate {
 	var blockViews: [BlockView] = []
 	var draggingChain: [BlockGrouping] = []
 	var touchedBlock: BlockView?
@@ -94,11 +94,13 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 	var horizontalDirection: HorizontalDirection = .Left
 	var verticalDirection: VerticalDirection = .Up
 
+	var scratchpadController: KAScratchpadViewController!
+
 	override func loadView() {
 		super.loadView()
 
 		self.view.addGestureRecognizer(spec.twoFingerTripleTapGestureRecognizer())
-		let scratchpadController = KAScratchpadViewController()
+		scratchpadController = KAScratchpadViewController()
 		self.addChildViewController(scratchpadController)
 		self.view.addSubview(scratchpadController.view)
 
@@ -115,10 +117,18 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		panGesture.maximumNumberOfTouches = 2
 		view.addGestureRecognizer(panGesture)
 
-		let addButton = UIButton.buttonWithType(UIButtonType.ContactAdd) as UIButton
+		let addButton = UIButton.buttonWithType(.ContactAdd) as UIButton
 		addButton.center = CGPoint(x: 20, y: 20)
 		addButton.addTarget(self, action: "addButtonPressed:", forControlEvents: .TouchUpInside)
 		view.addSubview(addButton)
+
+		let clearButton = UIButton.buttonWithType(.System) as UIButton
+		view.addSubview(clearButton)
+		clearButton.setTitle("Clear", forState: .Normal)
+		clearButton.setTranslatesAutoresizingMaskIntoConstraints(false)
+		view.addConstraint(NSLayoutConstraint(item: view, attribute: .Trailing, relatedBy: .Equal, toItem: clearButton, attribute: .Trailing, multiplier: 1, constant: 20))
+		view.addConstraint(NSLayoutConstraint(item: clearButton, attribute: .Top, relatedBy: .Equal, toItem: view, attribute: .Top, multiplier: 1, constant: 10))
+		clearButton.addTarget(self, action: "clearButtonPressed:", forControlEvents: .TouchUpInside)
 
 		spec.withKey("blockSize", owner: self) { $0.blockSize = $1 }
 	}
@@ -243,6 +253,24 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		let alertView = UIAlertView(title: "How many blocks?", message: "", delegate: self, cancelButtonTitle: "Cancel", otherButtonTitles: "Add")
 		alertView.alertViewStyle = .PlainTextInput
 		alertView.show()
+	}
+
+	func clearButtonPressed(sender: UIButton) {
+		let actionSheet = UIActionSheet(title: "Are you sure?", delegate: self, cancelButtonTitle: "Cancel", destructiveButtonTitle: "Clear")
+		actionSheet.showFromRect(sender.frame, inView: view, animated: true)
+	}
+
+	func actionSheet(actionSheet: UIActionSheet, didDismissWithButtonIndex buttonIndex: Int) {
+		if buttonIndex == actionSheet.destructiveButtonIndex {
+			for blockView in blockViews {
+				blockView.removeFromSuperview()
+			}
+			blockViews = []
+			blockViewsToAnimations = [:]
+			blockViewsToBlockGroupings = [:]
+
+			scratchpadController.resetCanvas()
+		}
 	}
 
 	func alertView(alertView: UIAlertView, didDismissWithButtonIndex buttonIndex: Int) {

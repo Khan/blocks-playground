@@ -24,4 +24,6 @@
 /** Touches originating in these edge insets will be ignored. */
 @property (nonatomic, assign, readwrite) UIEdgeInsets ignoreTouchEdgeInsets;
 
+- (void)resetCanvas;
+
 @end
