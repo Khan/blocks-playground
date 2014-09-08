@@ -118,7 +118,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		view.addGestureRecognizer(panGesture)
 
 		let addButton = UIButton.buttonWithType(.ContactAdd) as UIButton
-		addButton.center = CGPoint(x: 20, y: 20)
+		addButton.center = CGPoint(x: 30, y: 30)
 		addButton.addTarget(self, action: "addButtonPressed:", forControlEvents: .TouchUpInside)
 		view.addSubview(addButton)
 
@@ -126,8 +126,8 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		view.addSubview(clearButton)
 		clearButton.setTitle("Clear", forState: .Normal)
 		clearButton.setTranslatesAutoresizingMaskIntoConstraints(false)
-		view.addConstraint(NSLayoutConstraint(item: view, attribute: .Trailing, relatedBy: .Equal, toItem: clearButton, attribute: .Trailing, multiplier: 1, constant: 20))
-		view.addConstraint(NSLayoutConstraint(item: clearButton, attribute: .Top, relatedBy: .Equal, toItem: view, attribute: .Top, multiplier: 1, constant: 10))
+		view.addConstraint(NSLayoutConstraint(item: view, attribute: .Trailing, relatedBy: .Equal, toItem: clearButton, attribute: .Trailing, multiplier: 1, constant: 30))
+		view.addConstraint(NSLayoutConstraint(item: clearButton, attribute: .Top, relatedBy: .Equal, toItem: view, attribute: .Top, multiplier: 1, constant: 20))
 		clearButton.addTarget(self, action: "clearButtonPressed:", forControlEvents: .TouchUpInside)
 
 		spec.withKey("blockSize", owner: self) { $0.blockSize = $1 }
@@ -143,7 +143,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 		spec.withKey("blockBackgroundWhite", owner: blockView) { $0.backgroundColor = UIColor(white: $1, alpha: 1) }
 
 		// Debug block coloring:
-		blockView.backgroundColor = UIColor(hue: point.x / 768.0, saturation: 1.0 - (point.y / 1024.0) * 0.3, brightness: 0.7 + (point.y / 1024.0) * 0.3, alpha: 1.0)
+//		blockView.backgroundColor = UIColor(hue: point.x / 768.0, saturation: 1.0 - (point.y / 1024.0) * 0.3, brightness: 0.7 + (point.y / 1024.0) * 0.3, alpha: 1.0)
 
 		spec.withKey("blockBorderWhite", owner: blockView) { $0.layer.borderColor = UIColor(white: $1, alpha: 1).CGColor }
 		blockView.layer.borderWidth = 1

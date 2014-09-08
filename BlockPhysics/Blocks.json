@@ -1,72 +1,72 @@
-[
- {
- "sliderMaxValue": 1.0,
- "key": "blockBackgroundWhite",
- "label": "Block Background White %",
- "sliderValue": 0.9,
- "sliderMinValue": 0.0
- },
- {
- "sliderMaxValue": 1.0,
- "key": "blockBorderWhite",
- "label": "Block Border White %",
- "sliderValue": 0.7,
- "sliderMinValue": 0.0
- },
- {
- "sliderMaxValue": 4.0,
- "key": "leadingMagnificationScale",
- "label": "Scale factor for leading dragged block",
- "sliderValue": 2.0,
- "sliderMinValue": 1.0
- },
- {
- "sliderMaxValue": 3.0,
- "key": "trailingMagnificationScale",
- "label": "Scale factor for trailing dragged blocks",
- "sliderValue": 1.75,
- "sliderMinValue": 1.0
- },
- {
- "sliderMaxValue": 60,
- "key": "blockSize",
- "label": "Block size",
- "sliderValue": 15,
- "sliderMinValue": 8
- },
- {
- "sliderMaxValue": 2000,
- "key": "velocityThreshold",
- "label": "Block direction reverse velocity threshold",
- "sliderValue": 150.0,
- "sliderMinValue": 1.0
- },
- {
- "sliderMaxValue": 50000,
- "key": "nearTension",
- "label": "Near Tension",
- "sliderValue": 50000,
- "sliderMinValue": 1
- },
- {
- "sliderMaxValue": 1000,
- "key": "nearFriction",
- "label": "Near Friction",
- "sliderValue": 400,
- "sliderMinValue": 1
- },
- {
- "sliderMaxValue": 1,
- "key": "tensionFalloff",
- "label": "Tension Falloff",
- "sliderValue": 0.36,
- "sliderMinValue": 0
- },
- {
- "sliderMaxValue": 0.66,
- "key": "frictionFalloff",
- "label": "Friction Falloff",
- "sliderValue": 0.20,
- "sliderMinValue": 0
- },
- ]
+ [
+  {
+  "sliderMaxValue" : 1,
+  "key" : "blockBackgroundWhite",
+  "label" : "Block Background White %",
+  "sliderValue" : 0.9,
+  "sliderMinValue" : 0
+  },
+  {
+  "sliderMaxValue" : 1,
+  "key" : "blockBorderWhite",
+  "label" : "Block Border White %",
+  "sliderValue" : 0.7,
+  "sliderMinValue" : 0
+  },
+  {
+  "sliderMaxValue" : 4,
+  "key" : "leadingMagnificationScale",
+  "label" : "Scale factor for leading dragged block",
+  "sliderValue" : 2,
+  "sliderMinValue" : 1
+  },
+  {
+  "sliderMaxValue" : 3,
+  "key" : "trailingMagnificationScale",
+  "label" : "Scale factor for trailing dragged blocks",
+  "sliderValue" : 1.75,
+  "sliderMinValue" : 1
+  },
+  {
+  "sliderMaxValue" : 60,
+  "key" : "blockSize",
+  "label" : "Block size",
+  "sliderValue" : 23.22368,
+  "sliderMinValue" : 8
+  },
+  {
+  "sliderMaxValue" : 2000,
+  "key" : "velocityThreshold",
+  "label" : "Block direction reverse velocity threshold",
+  "sliderValue" : 934.7434,
+  "sliderMinValue" : 1
+  },
+  {
+  "sliderMaxValue" : 50000,
+  "key" : "nearTension",
+  "label" : "Near Tension",
+  "sliderValue" : 50000,
+  "sliderMinValue" : 1
+  },
+  {
+  "sliderMaxValue" : 1000,
+  "key" : "nearFriction",
+  "label" : "Near Friction",
+  "sliderValue" : 400,
+  "sliderMinValue" : 1
+  },
+  {
+  "sliderMaxValue" : 1,
+  "key" : "tensionFalloff",
+  "label" : "Tension Falloff",
+  "sliderValue" : 0.4835526,
+  "sliderMinValue" : 0
+  },
+  {
+  "sliderMaxValue" : 0.66,
+  "key" : "frictionFalloff",
+  "label" : "Friction Falloff",
+  "sliderValue" : 0.1715132,
+  "sliderMinValue" : 0
+  }
+  ]
