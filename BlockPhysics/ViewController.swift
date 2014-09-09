@@ -252,6 +252,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 	func addButtonPressed(sender: UIButton) {
 		let alertView = UIAlertView(title: "How many blocks?", message: "", delegate: self, cancelButtonTitle: "Cancel", otherButtonTitles: "Add")
 		alertView.alertViewStyle = .PlainTextInput
+		alertView.textFieldAtIndex(0)!.keyboardType = .NumberPad
 		alertView.show()
 	}
 
