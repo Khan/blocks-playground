@@ -119,6 +119,7 @@ class ViewController: UIViewController, UIGestureRecognizerDelegate, UIAlertView
 
 		let addButton = UIButton.buttonWithType(.ContactAdd) as UIButton
 		addButton.center = CGPoint(x: 30, y: 30)
+		addButton.frame = CGRectInset(addButton.frame, -20, -20)
 		addButton.addTarget(self, action: "addButtonPressed:", forControlEvents: .TouchUpInside)
 		view.addSubview(addButton)
 
